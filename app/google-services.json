@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "987466136699",
+    "project_id": "alertup-cf5ce",
+    "storage_bucket": "alertup-cf5ce.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:987466136699:android:da9a45aff66490dbe3b6de",
+        "android_client_info": {
+          "package_name": "com.example.alertuppp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8jXwqwj8lXkhX_eyUw1UUSN0gOZF9XYw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

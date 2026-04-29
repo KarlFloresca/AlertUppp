@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:orientation="vertical">
+
+    <!-- Toolbar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_primary_gradient"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:paddingTop="40dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/reports_management"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="Review, verify and respond to community reports"
+            android:textColor="#FFCDD2"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- Stats Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/surface"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+            <TextView android:id="@+id/tvStatPending" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="14" android:textColor="@color/warning" android:textSize="20sp" android:textStyle="bold" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Pending" android:textColor="@color/text_secondary" android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+            <TextView android:id="@+id/tvStatOngoing" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="5" android:textColor="#1976D2" android:textSize="20sp" android:textStyle="bold" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Ongoing" android:textColor="@color/text_secondary" android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+            <TextView android:id="@+id/tvStatResolved" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="32" android:textColor="@color/success" android:textSize="20sp" android:textStyle="bold" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Resolved" android:textColor="@color/text_secondary" android:textSize="11sp" />
+        </LinearLayout>
+
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:orientation="vertical">
+            <TextView android:id="@+id/tvStatTotal" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="51" android:textColor="@color/text_primary" android:textSize="20sp" android:textStyle="bold" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total" android:textColor="@color/text_secondary" android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Filter Chips -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView android:id="@+id/filterAll" android:layout_width="wrap_content" android:layout_height="32dp" android:gravity="center" android:paddingStart="16dp" android:paddingEnd="16dp" android:text="All" android:textColor="@color/white" android:textSize="12sp" android:background="@drawable/bg_chip_selected" />
+            <TextView android:id="@+id/filterFlood" android:layout_width="wrap_content" android:layout_height="32dp" android:gravity="center" android:layout_marginStart="8dp" android:paddingStart="16dp" android:paddingEnd="16dp" android:text="🌊 Flood" android:textColor="@color/text_secondary" android:textSize="12sp" android:background="@drawable/bg_chip_unselected" />
+            <TextView android:id="@+id/filterRescue" android:layout_width="wrap_content" android:layout_height="32dp" android:gravity="center" android:layout_marginStart="8dp" android:paddingStart="16dp" android:paddingEnd="16dp" android:text="🆘 Rescue" android:textColor="@color/text_secondary" android:textSize="12sp" android:background="@drawable/bg_chip_unselected" />
+            <TextView android:id="@+id/filterDamage" android:layout_width="wrap_content" android:layout_height="32dp" android:gravity="center" android:layout_marginStart="8dp" android:paddingStart="16dp" android:paddingEnd="16dp" android:text="🏚️ Damage" android:textColor="@color/text_secondary" android:textSize="12sp" android:background="@drawable/bg_chip_unselected" />
+            <TextView android:id="@+id/filterMedical" android:layout_width="wrap_content" android:layout_height="32dp" android:gravity="center" android:layout_marginStart="8dp" android:paddingStart="16dp" android:paddingEnd="16dp" android:text="🏥 Medical" android:textColor="@color/text_secondary" android:textSize="12sp" android:background="@drawable/bg_chip_unselected" />
+            <TextView android:id="@+id/filterMissing" android:layout_width="wrap_content" android:layout_height="32dp" android:gravity="center" android:layout_marginStart="8dp" android:paddingStart="16dp" android:paddingEnd="16dp" android:text="🔍 Missing" android:textColor="@color/text_secondary" android:textSize="12sp" android:background="@drawable/bg_chip_unselected" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Reports List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvReports"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="80dp"
+        android:clipToPadding="false" />
+
+</LinearLayout>
