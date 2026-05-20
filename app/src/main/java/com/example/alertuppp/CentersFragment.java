@@ -26,7 +26,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.alertuppp.adapter.CenterAdapter;
 import com.example.alertuppp.model.EvacuationCenter;
+import com.example.alertuppp.model.Family;
+import com.example.alertuppp.model.HouseholdProfile;
 import com.example.alertuppp.network.CenterRepository;
+import com.example.alertuppp.network.FamilyRepository;
+import com.example.alertuppp.network.HouseholdRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -39,6 +43,8 @@ public class CentersFragment extends Fragment {
 
     private CenterAdapter adapter;
     private CenterRepository repo;
+    private HouseholdRepository householdRepo;
+    private FamilyRepository familyRepo;
     private SessionManager session;
     private List<EvacuationCenter> allCenters = new ArrayList<>();
     private String activeFilter = "all";
@@ -90,6 +96,8 @@ public class CentersFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_centers_list, container, false);
 
         repo    = new CenterRepository(requireContext());
+        householdRepo = new HouseholdRepository(requireContext());
+        familyRepo = new FamilyRepository(requireContext());
         session = new SessionManager(requireContext());
 
         rvCenters      = view.findViewById(R.id.rvCenters);
@@ -335,17 +343,7 @@ public class CentersFragment extends Fragment {
     // ── Maps & Check-in ───────────────────────────────────────────────────────
 
     private void openMaps(EvacuationCenter center) {
-        Uri uri = center.getLatitude() != 0
-                ? Uri.parse("geo:" + center.getLatitude() + "," + center.getLongitude()
-                + "?q=" + Uri.encode(center.getName()))
-                : Uri.parse("geo:0,0?q=" + Uri.encode(
-                center.getName() + ", " + center.getMunicipality()));
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        if (intent.resolveActivity(requireActivity().getPackageManager()) != null) {
-            startActivity(intent);
-        } else {
-            Toast.makeText(requireContext(), "No maps app found", Toast.LENGTH_SHORT).show();
-        }
+        navigateTo(MapFragment.newInstance(center.getId(), true));
     }
 
     private void confirmCheckIn(EvacuationCenter center) {
@@ -356,31 +354,89 @@ public class CentersFragment extends Fragment {
                     .setPositiveButton("OK", null).show();
             return;
         }
-        new AlertDialog.Builder(requireContext())
-                .setTitle("Check In")
-                .setMessage("Check your family into " + center.getName() + "?")
-                .setPositiveButton("Check In", (d, w) ->
-                        repo.checkIn(center.getId(), session.getUserId(), 1,
-                                new CenterRepository.Callback<Void>() {
-                                    @Override public void onSuccess(Void r) {
-                                        if (!isAdded()) return;
-                                        requireActivity().runOnUiThread(() ->
-                                                Toast.makeText(requireContext(),
-                                                        "Checked in to " + center.getName(),
-                                                        Toast.LENGTH_LONG).show());
-                                    }
-                                    @Override public void onError(String msg) {
-                                        if (!isAdded()) return;
-                                        requireActivity().runOnUiThread(() ->
-                                                Toast.makeText(requireContext(),
-                                                        "Check-in failed: " + msg,
-                                                        Toast.LENGTH_SHORT).show());
-                                    }
-                                }))
-                .setNegativeButton("Cancel", null).show();
+
+        // 1. Load Household Profile to get ID
+        householdRepo.loadProfile(session.getUserId(), new HouseholdRepository.Callback<HouseholdProfile>() {
+            @Override
+            public void onSuccess(HouseholdProfile profile) {
+                if (profile == null) {
+                    requireActivity().runOnUiThread(() -> 
+                        Toast.makeText(requireContext(), "Please complete your household profile first", Toast.LENGTH_LONG).show());
+                    return;
+                }
+
+                // 2. Load Families to count members
+                familyRepo.loadFamilies(profile.getId(), new FamilyRepository.Callback<List<Family>>() {
+                    @Override
+                    public void onSuccess(List<Family> families) {
+                        int totalMembers = 0;
+                        boolean alreadyHere = false;
+                        for (Family f : families) {
+                            totalMembers += f.getMemberCount();
+                            if (center.getId().equals(f.getCenterId())) alreadyHere = true;
+                        }
+
+                        if (alreadyHere) {
+                            requireActivity().runOnUiThread(() -> 
+                                Toast.makeText(requireContext(), "You are already checked in to " + center.getName(), Toast.LENGTH_SHORT).show());
+                            return;
+                        }
+                        
+                        if (totalMembers == 0) totalMembers = 1; // Default to 1 if no families added yet
+                        
+                        final int finalCount = totalMembers;
+                        requireActivity().runOnUiThread(() -> {
+                            new AlertDialog.Builder(requireContext())
+                                    .setTitle("Check In")
+                                    .setMessage("Check " + finalCount + " members into " + center.getName() + "?")
+                                    .setPositiveButton("Check In", (d, w) -> performCheckIn(center, finalCount))
+                                    .setNegativeButton("Cancel", null).show();
+                        });
+                    }
+                    @Override public void onError(String msg) { handleError(msg); }
+                });
+            }
+            @Override public void onError(String msg) { handleError(msg); }
+        });
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    private void performCheckIn(EvacuationCenter center, int memberCount) {
+        repo.checkInHousehold(center.getId(), session.getUserId(), memberCount,
+                new CenterRepository.Callback<String>() {
+                    @Override public void onSuccess(String result) {
+                        if (!isAdded()) return;
+                        requireActivity().runOnUiThread(() -> {
+                            String msg;
+                            if ("ALREADY_HERE".equals(result)) {
+                                msg = "You are already checked in to " + center.getName();
+                            } else if ("TRANSFERRED".equals(result)) {
+                                msg = "Successfully transferred to " + center.getName();
+                                loadCenters(); // Refresh all to update occupancy of both old and new
+                            } else {
+                                msg = "Successfully checked in " + memberCount + " members!";
+                                loadCenters();
+                            }
+                            Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show();
+                        });
+                    }
+                    @Override public void onError(String msg) { handleError(msg); }
+                });
+    }
+
+    private void handleError(String message) {
+        if (!isAdded()) return;
+        requireActivity().runOnUiThread(() ->
+                Toast.makeText(requireContext(), "Error: " + message, Toast.LENGTH_SHORT).show());
+    }
+
+    private void navigateTo(Fragment fragment) {
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+                .replace(R.id.fragmentContainer, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
 
     private String txt(TextInputEditText et) {
         return et != null && et.getText() != null ? et.getText().toString().trim() : "";

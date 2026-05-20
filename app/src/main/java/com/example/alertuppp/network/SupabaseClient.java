@@ -59,7 +59,18 @@ public class SupabaseClient {
     public void delete(String table, String query) throws IOException {
         String urlStr = baseUrl + "/rest/v1/" + table + (query != null ? "?" + query : "");
         HttpURLConnection conn = open(urlStr, "DELETE");
-        conn.getResponseCode(); // execute
+        int code = conn.getResponseCode();
+        if (code < 200 || code >= 300) {
+            // Read error body if available
+            StringBuilder sb = new StringBuilder();
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                    conn.getErrorStream() != null ? conn.getErrorStream() : conn.getInputStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = br.readLine()) != null) sb.append(line);
+            } catch (Exception ignored) {}
+            conn.disconnect();
+            throw new IOException("HTTP " + code + (sb.length() > 0 ? ": " + sb : ""));
+        }
         conn.disconnect();
     }
 

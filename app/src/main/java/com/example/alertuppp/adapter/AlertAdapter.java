@@ -52,33 +52,30 @@ public class AlertAdapter extends RecyclerView.Adapter<AlertAdapter.ViewHolder> 
     public void onBindViewHolder(@NonNull ViewHolder h, int position) {
         Alert a = alerts.get(position);
 
-        h.tvEmoji.setText(a.getLevelEmoji());
         h.tvTitle.setText(a.getTitle());
-        h.tvArea.setText(a.getArea() != null ? a.getArea() : "");
+        h.tvArea.setText(a.getArea() != null ? a.getArea() : "Province Wide");
         h.tvBody.setText(a.getBody());
-        h.tvLevel.setText(a.getLevelLabel());
+        h.tvLevel.setText(a.getLevelLabel() != null ? a.getLevelLabel().toUpperCase() : "INFO");
         h.tvTime.setText(formatTime(a.getIssuedAt()));
 
-        // Color by level
-        int bgRes;
-        int textColor;
-        switch (a.getLevel() != null ? a.getLevel() : "info") {
+        // Color by level (Status Sidebar)
+        int color;
+        switch (a.getLevel() != null ? a.getLevel().toLowerCase() : "info") {
             case "danger":
-                bgRes = R.drawable.bg_alert_danger;
-                textColor = 0xFFD32F2F;
+            case "critical":
+                color = 0xFFD32F2F; // Red
                 break;
             case "warning":
-                bgRes = R.drawable.bg_alert_warning;
-                textColor = 0xFFF57C00;
+                color = 0xFFF57C00; // Orange
                 break;
             default:
-                bgRes = R.drawable.bg_card_rounded;
-                textColor = 0xFF212121;
+                color = 0xFF1976D2; // Blue
                 break;
         }
-        h.container.setBackgroundResource(bgRes);
-        h.tvTitle.setTextColor(textColor);
-        h.tvLevel.setTextColor(textColor);
+        h.viewSeverity.setBackgroundColor(color);
+        h.tvLevel.setTextColor(color);
+        h.tvLevel.setBackgroundResource(a.getLevel() != null && (a.getLevel().equalsIgnoreCase("danger") || a.getLevel().equalsIgnoreCase("critical")) 
+                ? R.drawable.bg_status_missing : R.drawable.bg_status_safe);
 
         // Official actions
         if (showOfficialActions && listener != null) {
@@ -94,23 +91,25 @@ public class AlertAdapter extends RecyclerView.Adapter<AlertAdapter.ViewHolder> 
 
     private String formatTime(String iso) {
         if (iso == null || iso.isEmpty()) return "";
-        // Simple display — replace with proper date formatting if needed
         try {
-            return "Issued: " + iso.substring(0, 10) + " " + iso.substring(11, 16);
+            // "2023-10-27T10:00:00Z" -> "Oct 27, 10:00"
+            return iso.substring(0, 10) + " " + iso.substring(11, 16);
         } catch (Exception e) {
             return iso;
         }
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        LinearLayout container, layoutActions;
-        TextView tvEmoji, tvTitle, tvArea, tvBody, tvLevel, tvTime;
+        com.google.android.material.card.MaterialCardView card;
+        View viewSeverity;
+        LinearLayout layoutActions;
+        TextView tvTitle, tvArea, tvBody, tvLevel, tvTime;
         MaterialButton btnDeactivate;
 
         ViewHolder(@NonNull View v) {
             super(v);
-            container      = v.findViewById(R.id.alertContainer);
-            tvEmoji        = v.findViewById(R.id.tvAlertEmoji);
+            card           = v.findViewById(R.id.alertCard);
+            viewSeverity   = v.findViewById(R.id.viewAlertSeverity);
             tvTitle        = v.findViewById(R.id.tvAlertTitle);
             tvArea         = v.findViewById(R.id.tvAlertArea);
             tvBody         = v.findViewById(R.id.tvAlertBody);

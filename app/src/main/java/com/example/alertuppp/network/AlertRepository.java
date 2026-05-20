@@ -28,11 +28,10 @@ public class AlertRepository {
         client = new SupabaseClient(ctx);
     }
 
-    /** Load all active alerts ordered by issued_at desc. */
     public void loadActive(Callback<List<Alert>> cb) {
         executor.execute(() -> {
             try {
-                String json = client.get("active_alerts", "select=*");
+                String json = client.get("alerts", "select=*&is_active=eq.true&order=issued_at.desc");
                 cb.onSuccess(parseList(json));
             } catch (IOException | JSONException e) {
                 cb.onError(e.getMessage());

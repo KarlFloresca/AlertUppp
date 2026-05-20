@@ -32,89 +32,113 @@
             app:fabSize="mini" />
     </LinearLayout>
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:overScrollMode="never">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp"
-            android:paddingBottom="80dp">
+            android:padding="20dp"
+            android:paddingBottom="100dp">
 
-            <!-- Mass Notification Composer -->
-            <androidx.cardview.widget.CardView
+            <!-- Mass Notification Composer (Redesigned) -->
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="3dp">
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="6dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#EEEEEE">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="24dp">
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📢  Send Mass Notification" android:textColor="@color/text_primary" android:textSize="15sp" android:textStyle="bold" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Broadcaster Console"
+                        android:textColor="@color/text_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.02" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Issue a new emergency alert to the public"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
 
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
-                        android:hint="Alert Level">
+                        android:layout_marginTop="20dp"
+                        android:hint="Severity Level"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
                         <AutoCompleteTextView android:id="@+id/spinnerAlertLevel" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="none" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="14dp" android:layout_marginBottom="8dp" android:text="Target Area" android:textColor="@color/text_secondary" android:textSize="12sp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="Target Audience" android:textColor="@color/text_primary" android:textSize="13sp" android:textStyle="bold" />
 
-                    <!-- Scope: whole province or specific location -->
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-                        <CheckBox android:id="@+id/cbTargetAll" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Entire Province" android:textSize="13sp" android:checked="true" />
-                        <CheckBox android:id="@+id/cbTargetBarangay" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Specific Location" android:textSize="13sp" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:orientation="horizontal">
+                        <CheckBox android:id="@+id/cbTargetAll" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Province Wide" android:textSize="13sp" android:checked="true" />
+                        <CheckBox android:id="@+id/cbTargetBarangay" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Specific Area" android:textSize="13sp" />
                     </LinearLayout>
 
-                    <!-- Municipality dropdown (shown when Specific Location is checked) -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilAlertMunicipality"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="12dp"
                         android:hint="Municipality"
-                        android:visibility="gone">
-                        <AutoCompleteTextView
-                            android:id="@+id/spinnerAlertMunicipality"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="none" />
+                        android:visibility="gone"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
+                        <AutoCompleteTextView android:id="@+id/spinnerAlertMunicipality" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="none" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Barangay dropdown (cascades from municipality) -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilAlertBarangay"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:hint="Barangay (optional — leave blank for whole municipality)"
-                        android:visibility="gone">
-                        <AutoCompleteTextView
-                            android:id="@+id/spinnerAlertBarangay"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="none" />
+                        android:hint="Barangay"
+                        android:visibility="gone"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
+                        <AutoCompleteTextView android:id="@+id/spinnerAlertBarangay" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="none" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:hint="Alert Title">
+                        android:layout_marginTop="16dp"
+                        android:hint="Headline"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
                         <com.google.android.material.textfield.TextInputEditText android:id="@+id/etAlertTitle" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textCapSentences" />
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -122,77 +146,66 @@
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:hint="Message">
+                        android:layout_marginTop="12dp"
+                        android:hint="Broadcast Message"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
                         <com.google.android.material.textfield.TextInputEditText android:id="@+id/etAlertBody" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textMultiLine|textCapSentences" android:minLines="3" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnSendAlert"
-                        style="@style/PrimaryButton"
                         android:layout_width="match_parent"
-                        android:layout_height="52dp"
-                        android:layout_marginTop="16dp"
-                        android:text="📢  Send Alert Now"
-                        android:textSize="15sp" />
+                        android:layout_height="56dp"
+                        android:layout_marginTop="24dp"
+                        android:text="BROADCAST NOW"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        app:cornerRadius="12dp"
+                        android:backgroundTint="@color/primary" />
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
-            <!-- Active Alerts List -->
+            <!-- Active Alerts Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
-                android:text="Active Alerts"
-                style="@style/SectionTitle" />
+                android:layout_marginBottom="12dp"
+                android:text="LIVE BROADCASTS"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvActiveAlerts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false" />
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
 
-            <!-- Activity Log -->
+            <!-- Activity Log Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="10dp"
-                android:text="Activity Log"
-                style="@style/SectionTitle" />
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="12dp"
+                android:text="HISTORICAL LOGS"
+                android:textColor="@color/text_primary"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1" />
 
-            <androidx.cardview.widget.CardView
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvAlertHistory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="10dp"
-                app:cardElevation="2dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="14dp">
-
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal" android:layout_marginBottom="10dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📢" android:textSize="16sp" />
-                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="10dp" android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Alert sent: Typhoon Warning #2" android:textColor="@color/text_primary" android:textSize="13sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="By: Admin · Today 8:00 AM" android:textColor="@color/text_secondary" android:textSize="11sp" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/divider" android:layout_marginBottom="10dp" />
-
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:orientation="horizontal">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="✅" android:textSize="16sp" />
-                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="10dp" android:orientation="vertical">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Report resolved: Flood — Brgy. Lag-on" android:textColor="@color/text_primary" android:textSize="13sp" />
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="By: Admin · Yesterday 3:00 PM" android:textColor="@color/text_secondary" android:textSize="11sp" />
-                        </LinearLayout>
-                    </LinearLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
 
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 </LinearLayout>

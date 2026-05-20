@@ -12,7 +12,11 @@ public class IncidentReport {
     private String landmark;
     private String photoUrl;
     private String status; // pending | verified | ongoing | resolved
+    private String assignedTeam;
     private String createdAt;
+    private boolean isDuplicate;
+    private String parentReportId;
+    private int duplicateCount = 0;
 
     public IncidentReport() {}
 
@@ -49,8 +53,20 @@ public class IncidentReport {
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
+    public String getAssignedTeam() { return assignedTeam; }
+    public void setAssignedTeam(String assignedTeam) { this.assignedTeam = assignedTeam; }
+
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+
+    public boolean isDuplicate() { return isDuplicate; }
+    public void setDuplicate(boolean duplicate) { isDuplicate = duplicate; }
+
+    public String getParentReportId() { return parentReportId; }
+    public void setParentReportId(String parentReportId) { this.parentReportId = parentReportId; }
+
+    public int getDuplicateCount() { return duplicateCount; }
+    public void setDuplicateCount(int count) { this.duplicateCount = count; }
 
     public String getTypeEmoji() {
         if (reportType == null) return "📋";

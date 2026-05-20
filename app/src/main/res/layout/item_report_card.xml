@@ -50,6 +50,17 @@
                     android:text="Flood · Daet · 2 hrs ago"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvDuplicateCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Reported by 3 residents"
+                    android:textColor="#1976D2"
+                    android:textSize="11sp"
+                    android:textStyle="italic"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <TextView
@@ -74,9 +85,28 @@
             android:layout_marginTop="8dp"
             android:text="Water level has risen to knee-level near the bridge. Residents are requesting assistance."
             android:textColor="@color/text_secondary"
-            android:textSize="13sp"
-            android:maxLines="2"
-            android:ellipsize="end" />
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/tvReportExtraInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="📍 Near the bridge"
+            android:textColor="#1976D2"
+            android:textSize="12sp"
+            android:textStyle="italic"
+            android:visibility="gone" />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ivReportPhoto"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:layout_marginTop="10dp"
+            android:scaleType="centerCrop"
+            android:background="#EEEEEE"
+            android:visibility="gone"
+            app:shapeAppearanceOverlay="@style/RoundedImageView" />
 
         <!-- Action Buttons (for officials) -->
         <LinearLayout
@@ -104,7 +134,7 @@
                 android:layout_height="34dp"
                 android:layout_weight="1"
                 android:layout_marginEnd="6dp"
-                android:text="Assign"
+                android:text="Respond"
                 android:textSize="12sp" />
 
             <com.google.android.material.button.MaterialButton

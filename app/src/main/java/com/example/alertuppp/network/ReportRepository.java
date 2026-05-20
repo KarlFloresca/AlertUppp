@@ -85,12 +85,16 @@ public class ReportRepository {
     }
 
     /** Load all reports (officials). Optionally filter by type. */
-    public void loadAll(String typeFilter, Callback<List<IncidentReport>> cb) {
+    public void loadAll(String typeFilter, @Nullable String statusFilter, Callback<List<IncidentReport>> cb) {
         executor.execute(() -> {
             try {
                 String query = "select=*&order=created_at.desc";
                 if (typeFilter != null && !typeFilter.equals("all"))
                     query += "&report_type=eq." + typeFilter;
+                if (statusFilter != null) {
+                    if (statusFilter.contains(",")) query += "&status=in.(" + statusFilter + ")";
+                    else query += "&status=eq." + statusFilter;
+                }
                 String json = client.get("incident_reports", query);
                 cb.onSuccess(parseList(json));
             } catch (IOException | JSONException e) {
@@ -118,11 +122,40 @@ public class ReportRepository {
             try {
                 JSONObject body = new JSONObject();
                 body.put("status", newStatus);
-                if ("resolved".equals(newStatus)) {
-                    // resolved_at handled by DB trigger or set here
-                }
                 client.patch("incident_reports", "id=eq." + reportId, body.toString());
                 cb.onSuccess(null);
+            } catch (IOException | JSONException e) {
+                cb.onError(e.getMessage());
+            }
+        });
+    }
+
+    /** Update report status and assign a team (Respond action). */
+    public void respond(String reportId, String teamName, Callback<Void> cb) {
+        executor.execute(() -> {
+            try {
+                JSONObject body = new JSONObject();
+                body.put("status", "ongoing");
+                body.put("assigned_team", teamName);
+                client.patch("incident_reports", "id=eq." + reportId, body.toString());
+                cb.onSuccess(null);
+            } catch (IOException | JSONException e) {
+                cb.onError(e.getMessage());
+            }
+        });
+    }
+
+    /** Fetch a single report by its ID (useful for status polling). */
+    public void getReportById(String reportId, Callback<IncidentReport> cb) {
+        executor.execute(() -> {
+            try {
+                String response = client.get("incident_reports", "id=eq." + reportId + "&select=*");
+                JSONArray arr = new JSONArray(response);
+                if (arr.length() > 0) {
+                    cb.onSuccess(fromJson(arr.getJSONObject(0)));
+                } else {
+                    cb.onError("Report not found");
+                }
             } catch (IOException | JSONException e) {
                 cb.onError(e.getMessage());
             }
@@ -151,7 +184,10 @@ public class ReportRepository {
         r.setLandmark(o.optString("landmark"));
         r.setPhotoUrl(o.optString("photo_url"));
         r.setStatus(o.optString("status", "pending"));
+        r.setAssignedTeam(o.optString("assigned_team"));
         r.setCreatedAt(o.optString("created_at"));
+        r.setDuplicate(o.optBoolean("is_duplicate", false));
+        r.setParentReportId(o.optString("parent_report_id"));
         return r;
     }
 }

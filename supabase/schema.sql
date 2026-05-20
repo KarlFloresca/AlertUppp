@@ -184,6 +184,19 @@ CREATE TABLE public.family_members (
   CONSTRAINT family_members_registration_fkey FOREIGN KEY (registration_id) REFERENCES public.family_registrations(id)
 );
 
+-- evacuation_history: tracking check-ins/check-outs at centers
+CREATE TABLE public.evacuation_history (
+  id            uuid        NOT NULL DEFAULT uuid_generate_v4(),
+  center_id     uuid        NOT NULL,
+  resident_id   uuid        NOT NULL,
+  member_count  integer     NOT NULL DEFAULT 1,
+  checked_in_at timestamptz NOT NULL DEFAULT now(),
+  checked_out_at timestamptz,
+  CONSTRAINT evacuation_history_pkey PRIMARY KEY (id),
+  CONSTRAINT evacuation_history_center_fkey FOREIGN KEY (center_id) REFERENCES public.evacuation_centers(id),
+  CONSTRAINT evacuation_history_resident_fkey FOREIGN KEY (resident_id) REFERENCES public.profiles(id)
+);
+
 -- ── 4. Trigger: auto-create profile on sign-up ───────────────────────────────
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()

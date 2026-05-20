@@ -1,183 +1,322 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingBottom="80dp">
+        android:layout_height="match_parent">
+        <!-- ... (ScrollView content remains same) ... -->
 
-        <!-- Header -->
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_primary_gradient"
-            android:orientation="vertical"
-            android:padding="20dp"
-            android:paddingBottom="24dp">
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:background="@color/background">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                android:paddingBottom="80dp">
 
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Admin Dashboard" android:textColor="@color/white" android:textSize="22sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Real-time monitoring · Camarines Norte" android:textColor="#FFCDD2" android:textSize="12sp" />
+                <!-- Sophisticated Header -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_primary_gradient"
+                    android:padding="24dp"
+                    android:paddingBottom="40dp">
+
+                    <TextView
+                        android:id="@+id/tvGreeting"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Welcome back,"
+                        android:textColor="#E0E0E0"
+                        android:textSize="14sp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/tvAdminName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Command Center"
+                        android:textColor="@color/white"
+                        android:textSize="26sp"
+                        android:textStyle="bold"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/tvGreeting" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:cardBackgroundColor="#33FFFFFF"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="0dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/tvGreeting"
+                        app:layout_constraintBottom_toBottomOf="@id/tvAdminName">
+                        <TextView
+                            android:id="@+id/tvLiveIndicator"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="4dp"
+                            android:text="● LIVE"
+                            android:textColor="@color/white"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+                    </com.google.android.material.card.MaterialCardView>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <!-- Main Metric: Total Evacuees (Now outside header) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTotalEvacuees"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="24dp"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="8dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="20dp">
+
+                        <TextView
+                            android:id="@+id/lblTotalEvacuees"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="TOTAL EVACUEES"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.1"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/tvTotalEvacuees"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="@color/primary"
+                            android:textSize="36sp"
+                            android:textStyle="bold"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/lblTotalEvacuees" />
+
+                        <com.airbnb.lottie.LottieAnimationView
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            app:lottie_rawRes="@raw/anim_config"
+                            app:lottie_autoPlay="true"
+                            app:lottie_loop="true"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Sub-Metrics Grid (Balanced) -->
+                <androidx.gridlayout.widget.GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:paddingHorizontal="16dp"
+                    app:columnCount="2"
+                    app:rowCount="2">
+
+                    <!-- Metric 1: Active Centers -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        app:cardBackgroundColor="@color/white"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="2dp"
+                        app:layout_columnWeight="1">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                            <com.airbnb.lottie.LottieAnimationView android:layout_width="40dp" android:layout_height="40dp" app:lottie_rawRes="@raw/anim_centers" app:lottie_autoPlay="true" app:lottie_loop="true" />
+                            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="12dp">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CENTERS" android:textColor="@color/text_secondary" android:textSize="10sp" android:textStyle="bold" />
+                                <TextView android:id="@+id/tvActiveCenters" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textColor="@color/text_primary" android:textSize="18sp" android:textStyle="bold" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Metric 2: Active Alerts -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        app:cardBackgroundColor="@color/white"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="2dp"
+                        app:layout_columnWeight="1">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                            <com.airbnb.lottie.LottieAnimationView android:layout_width="40dp" android:layout_height="40dp" app:lottie_rawRes="@raw/anim_alerts" app:lottie_autoPlay="true" app:lottie_loop="true" />
+                            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="12dp">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ALERTS" android:textColor="@color/text_secondary" android:textSize="10sp" android:textStyle="bold" />
+                                <TextView android:id="@+id/tvActiveAlerts" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textColor="@color/accent" android:textSize="18sp" android:textStyle="bold" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Metric 3: Pending Reports -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        app:cardBackgroundColor="@color/white"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="2dp"
+                        app:layout_columnWeight="1">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                            <com.airbnb.lottie.LottieAnimationView android:layout_width="40dp" android:layout_height="40dp" app:lottie_rawRes="@raw/anim_reports" app:lottie_autoPlay="true" app:lottie_loop="true" />
+                            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="12dp">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="REPORTS" android:textColor="@color/text_secondary" android:textSize="10sp" android:textStyle="bold" />
+                                <TextView android:id="@+id/tvPendingReports" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textColor="@color/danger" android:textSize="18sp" android:textStyle="bold" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Metric 4: Success Rate (Or similar) -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8dp"
+                        app:cardBackgroundColor="@color/white"
+                        app:cardCornerRadius="14dp"
+                        app:cardElevation="2dp"
+                        app:layout_columnWeight="1">
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:padding="16dp" android:gravity="center_vertical">
+                            <com.airbnb.lottie.LottieAnimationView android:layout_width="40dp" android:layout_height="40dp" app:lottie_rawRes="@raw/anim_analytics" app:lottie_autoPlay="true" app:lottie_loop="true" />
+                            <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="12dp">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ANALYTICS" android:textColor="@color/text_secondary" android:textSize="10sp" android:textStyle="bold" />
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Live" android:textColor="@color/success" android:textSize="16sp" android:textStyle="bold" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </androidx.gridlayout.widget.GridLayout>
+                
+                <!-- Report Generation Action -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnGeneratePdfReport"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="24dp"
+                    android:layout_marginTop="8dp"
+                    app:cardBackgroundColor="@color/primary"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="4dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+                        
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@android:drawable/ic_menu_save"
+                            app:tint="@color/white" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:text="GENERATE PDF REPORT"
+                            android:textColor="@color/white"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+
+                <!-- Center Status Carousel -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:layout_marginStart="24dp" android:layout_marginEnd="24dp" android:gravity="center_vertical" android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Center Status" android:textColor="@color/text_primary" android:textSize="16sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/btnManageAllCenters" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Manage All" android:textColor="@color/primary" android:textSize="12sp" android:textStyle="bold" />
                 </LinearLayout>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnMassAlert"
-                    style="@style/Widget.Material3.Button.OutlinedButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="📢 Alert"
-                    android:textColor="@color/white"
-                    android:strokeColor="@color/white"
-                    android:textSize="12sp" />
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvCenterOccupancy"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="16dp"
+                    android:orientation="horizontal" />
+
+                <!-- Recent Activity Feed -->
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:layout_marginStart="24dp" android:layout_marginEnd="24dp" android:gravity="center_vertical" android:orientation="horizontal">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Recent Reports" android:textColor="@color/text_primary" android:textSize="16sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/btnViewAllReports" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="View All" android:textColor="@color/primary" android:textSize="12sp" android:textStyle="bold" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvPendingReports"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:nestedScrollingEnabled="false" />
+
+                <!-- Global Weather News -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginEnd="24dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="National Weather Updates"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/linearLayoutGlobalNews"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginHorizontal="16dp"
+                    android:orientation="vertical">
+                    <!-- Global news items will be added here -->
+                </LinearLayout>
+
             </LinearLayout>
+        </ScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-            <!-- Live Stats Row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:orientation="horizontal">
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/loadingAnim"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        app:lottie_rawRes="@raw/anim_loading"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true" />
 
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:background="@drawable/bg_stat_card" android:gravity="center" android:orientation="vertical" android:padding="12dp" android:layout_marginEnd="6dp">
-                    <TextView android:id="@+id/tvTotalEvacuees" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1,240" android:textColor="@color/white" android:textSize="22sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Evacuees" android:textColor="#FFCDD2" android:textSize="11sp" />
-                </LinearLayout>
-
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:background="@drawable/bg_stat_card" android:gravity="center" android:orientation="vertical" android:padding="12dp" android:layout_marginEnd="6dp">
-                    <TextView android:id="@+id/tvActiveCenters" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="8" android:textColor="@color/white" android:textSize="22sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Active Centers" android:textColor="#FFCDD2" android:textSize="11sp" />
-                </LinearLayout>
-
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:background="@drawable/bg_stat_card" android:gravity="center" android:orientation="vertical" android:padding="12dp" android:layout_marginEnd="6dp">
-                    <TextView android:id="@+id/tvPendingReports" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="14" android:textColor="@color/white" android:textSize="22sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Reports" android:textColor="#FFCDD2" android:textSize="11sp" />
-                </LinearLayout>
-
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:background="@drawable/bg_stat_card" android:gravity="center" android:orientation="vertical" android:padding="12dp">
-                    <TextView android:id="@+id/tvActiveAlerts" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="2" android:textColor="@color/white" android:textSize="22sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Alerts" android:textColor="#FFCDD2" android:textSize="11sp" />
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Quick Admin Actions -->
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:layout_marginTop="20dp" android:text="Quick Actions" style="@style/SectionTitle" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:orientation="horizontal">
-
-            <LinearLayout android:id="@+id/btnManageCenters" android:layout_width="0dp" android:layout_height="90dp" android:layout_weight="1" android:layout_margin="4dp" android:background="@drawable/bg_primary_gradient" android:gravity="center" android:orientation="vertical" android:clickable="true" android:focusable="true">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🏫" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Centers" android:textColor="@color/white" android:textSize="11sp" android:layout_marginTop="4dp" android:gravity="center" />
-            </LinearLayout>
-
-            <LinearLayout android:id="@+id/btnViewReports" android:layout_width="0dp" android:layout_height="90dp" android:layout_weight="1" android:layout_margin="4dp" android:background="@drawable/bg_card_rounded" android:gravity="center" android:orientation="vertical" android:clickable="true" android:focusable="true">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📋" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Reports" android:textColor="@color/text_primary" android:textSize="11sp" android:layout_marginTop="4dp" android:gravity="center" />
-            </LinearLayout>
-
-            <LinearLayout android:id="@+id/btnPostAlert" android:layout_width="0dp" android:layout_height="90dp" android:layout_weight="1" android:layout_margin="4dp" android:background="@drawable/bg_card_rounded" android:gravity="center" android:orientation="vertical" android:clickable="true" android:focusable="true">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📢" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Post Alert" android:textColor="@color/text_primary" android:textSize="11sp" android:layout_marginTop="4dp" android:gravity="center" />
-            </LinearLayout>
-
-            <LinearLayout android:id="@+id/btnAnalytics" android:layout_width="0dp" android:layout_height="90dp" android:layout_weight="1" android:layout_margin="4dp" android:background="@drawable/bg_card_rounded" android:gravity="center" android:orientation="vertical" android:clickable="true" android:focusable="true">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📊" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Analytics" android:textColor="@color/text_primary" android:textSize="11sp" android:layout_marginTop="4dp" android:gravity="center" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Center Occupancy Overview -->
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:gravity="center_vertical" android:orientation="horizontal">
-            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Center Occupancy" style="@style/SectionTitle" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Manage all ›" android:textColor="@color/primary" android:textSize="13sp" />
-        </LinearLayout>
-
-        <include layout="@layout/item_center_occupancy"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="10dp" />
-
-        <include layout="@layout/item_center_occupancy"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="8dp" />
-
-        <!-- Pending Reports -->
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:gravity="center_vertical" android:orientation="horizontal">
-            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Pending Reports" style="@style/SectionTitle" />
-            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="View all ›" android:textColor="@color/primary" android:textSize="13sp" />
-        </LinearLayout>
-
-        <include layout="@layout/item_report_card"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="10dp" />
-
-        <include layout="@layout/item_report_card"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="8dp" />
-
-        <!-- Analytics Summary -->
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="20dp" android:layout_marginTop="20dp" android:text="Analytics Overview" style="@style/SectionTitle" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:orientation="horizontal">
-
-            <androidx.cardview.widget.CardView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="8dp" app:cardCornerRadius="10dp" app:cardElevation="2dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:padding="14dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🌊" android:textSize="24sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="8" android:textColor="@color/primary" android:textSize="22sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Flood Reports" android:textColor="@color/text_secondary" android:textSize="11sp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="8dp" app:cardCornerRadius="10dp" app:cardElevation="2dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:padding="14dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🆘" android:textSize="24sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="3" android:textColor="@color/danger" android:textSize="22sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Rescue Needed" android:textColor="@color/text_secondary" android:textSize="11sp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" app:cardCornerRadius="10dp" app:cardElevation="2dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="vertical" android:padding="14dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📍" android:textSize="24sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="5" android:textColor="@color/warning" android:textSize="22sp" android:textStyle="bold" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="High-Risk Areas" android:textColor="@color/text_secondary" android:textSize="11sp" />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-        </LinearLayout>
-
-    </LinearLayout>
-</ScrollView>
+</FrameLayout>

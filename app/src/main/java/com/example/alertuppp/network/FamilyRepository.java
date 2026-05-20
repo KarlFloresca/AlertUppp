@@ -90,8 +90,11 @@ public class FamilyRepository {
             try {
                 JSONObject body = new JSONObject();
                 body.put("family_name", family.getFamilyName());
-                if (family.getCenterId() != null && !family.getCenterId().isEmpty())
+                if (family.getCenterId() != null && !family.getCenterId().isEmpty()) {
                     body.put("center_id", family.getCenterId());
+                } else {
+                    body.put("center_id", JSONObject.NULL);
+                }
                 client.patch("family_registrations", "id=eq." + family.getId(), body.toString());
                 cb.onSuccess(null);
             } catch (IOException | JSONException e) {
@@ -183,8 +186,9 @@ public class FamilyRepository {
         f.setHouseholdId(o.optString("household_id"));
         f.setResidentId(o.optString("resident_id"));
         f.setFamilyName(o.optString("family_name", "Family"));
-        String centerId = o.optString("center_id", "");
-        if (!centerId.isEmpty()) f.setCenterId(centerId);
+        if (!o.isNull("center_id")) {
+            f.setCenterId(o.optString("center_id"));
+        }
         f.setRegisteredAt(o.optString("registered_at"));
         JSONObject center = o.optJSONObject("evacuation_centers");
         if (center != null) f.setCenterName(center.optString("name"));
@@ -199,6 +203,53 @@ public class FamilyRepository {
         m.setAge(o.optInt("age", 0));
         m.setNotes(o.optString("notes", ""));
         return m;
+    }
+
+    public void loadFamiliesByResident(String residentId, Callback<List<Family>> cb) {
+        executor.execute(() -> {
+            try {
+                String json = client.get("family_registrations", "resident_id=eq." + residentId);
+                JSONArray arr = new JSONArray(json);
+                List<Family> list = new ArrayList<>();
+                for (int i = 0; i < arr.length(); i++) {
+                    list.add(familyFromJson(arr.getJSONObject(i)));
+                }
+                cb.onSuccess(list);
+            } catch (IOException | JSONException e) {
+                cb.onError(e.getMessage());
+            }
+        });
+    }
+
+    public void loadAllEvacuatedFamilies(Callback<List<Family>> cb) {
+        executor.execute(() -> {
+            try {
+                String json = client.get("family_registrations",
+                        "center_id=not.is.null"
+                        + "&select=*,evacuation_centers(name),family_members(id,full_name,age)"
+                        + "&order=center_id.asc");
+                JSONArray arr = new JSONArray(json);
+                List<Family> families = new ArrayList<>();
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject obj = arr.getJSONObject(i);
+                    Family f = familyFromJson(obj);
+                    
+                    // Parse members
+                    JSONArray memberArr = obj.optJSONArray("family_members");
+                    if (memberArr != null) {
+                        List<FamilyMember> members = new ArrayList<>();
+                        for (int j = 0; j < memberArr.length(); j++) {
+                            members.add(memberFromJson(memberArr.getJSONObject(j)));
+                        }
+                        f.setMembers(members);
+                    }
+                    families.add(f);
+                }
+                cb.onSuccess(families);
+            } catch (IOException | JSONException e) {
+                cb.onError(e.getMessage());
+            }
+        });
     }
 
     public void shutdown() { executor.shutdownNow(); }

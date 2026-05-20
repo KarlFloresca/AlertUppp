@@ -15,6 +15,7 @@ ALTER TABLE public.household_profiles   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.household_members    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.family_registrations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.family_members       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.evacuation_history   ENABLE ROW LEVEL SECURITY;
 
 -- ── 2. Helper: is the current user an official? ───────────────────────────────
 
@@ -54,7 +55,9 @@ CREATE POLICY "centers_insert" ON public.evacuation_centers
   FOR INSERT TO authenticated WITH CHECK (public.is_official());
 
 CREATE POLICY "centers_update" ON public.evacuation_centers
-  FOR UPDATE TO authenticated USING (public.is_official());
+  FOR UPDATE TO authenticated 
+  USING (true)
+  WITH CHECK (true);
 
 CREATE POLICY "centers_delete" ON public.evacuation_centers
   FOR DELETE TO authenticated USING (public.is_official());
@@ -232,3 +235,13 @@ CREATE POLICY "device_tokens_update" ON public.device_tokens
 
 -- Service role (Edge Function) can read all tokens to send notifications
 -- This is handled automatically by service_role key bypassing RLS.
+-- ── 14. evacuation_history ────────────────────────────────────────────────────
+-- Residents see their own. Officials see all.
+
+CREATE POLICY "evacuation_history_select" ON public.evacuation_history
+  FOR SELECT TO authenticated
+  USING (resident_id = auth.uid() OR public.is_official());
+
+CREATE POLICY "evacuation_history_insert" ON public.evacuation_history
+  FOR INSERT TO authenticated
+  WITH CHECK (resident_id = auth.uid());

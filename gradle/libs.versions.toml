@@ -10,6 +10,11 @@ constraintlayout = "2.2.1"
 osmdroid = "6.1.20"
 firebaseBom = "33.7.0"
 googleServices = "4.4.2"
+glide = "4.16.0"
+lottie = "6.4.0"
+swiperefreshlayout = "1.1.0"
+gridlayout = "1.0.0"
+mpandroidchart = "v3.1.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -22,6 +27,11 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 osmdroid-android = { group = "org.osmdroid", name = "osmdroid-android", version.ref = "osmdroid" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
+glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+lottie = { group = "com.airbnb.android", name = "lottie", version.ref = "lottie" }
+swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
+gridlayout = { group = "androidx.gridlayout", name = "gridlayout", version.ref = "gridlayout" }
+mpandroidchart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "mpandroidchart" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

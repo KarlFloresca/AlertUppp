@@ -29,7 +29,8 @@ import java.util.List;
 public class OfficialAlertsFragment extends Fragment {
 
     private AlertRepository repo;
-    private AlertAdapter adapter;
+    private AlertAdapter activeAdapter;
+    private AlertAdapter historyAdapter;
 
     // Targeting views
     private CheckBox cbTargetAll, cbTargetBarangay;
@@ -61,14 +62,18 @@ public class OfficialAlertsFragment extends Fragment {
 
         setupTargeting();
 
-        // Active alerts list
-        RecyclerView rv = view.findViewById(R.id.rvActiveAlerts);
-        if (rv != null) {
-            adapter = new AlertAdapter(true);
-            adapter.setListener(alert -> confirmDeactivate(alert));
-            rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-            rv.setAdapter(adapter);
-        }
+        // 1. Active alerts list
+        RecyclerView rvActive = view.findViewById(R.id.rvActiveAlerts);
+        activeAdapter = new AlertAdapter(true); // Official mode
+        activeAdapter.setListener(alert -> confirmDeactivate(alert));
+        rvActive.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvActive.setAdapter(activeAdapter);
+
+        // 2. Alert History list
+        RecyclerView rvHistory = view.findViewById(R.id.rvAlertHistory);
+        historyAdapter = new AlertAdapter(false); // Read-only mode
+        rvHistory.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvHistory.setAdapter(historyAdapter);
 
         view.findViewById(R.id.btnSendAlert).setOnClickListener(v -> sendAlert(view));
         view.findViewById(R.id.fabNewAlert).setOnClickListener(v -> clearForm(view));
@@ -102,12 +107,12 @@ public class OfficialAlertsFragment extends Fragment {
 
         // Municipality dropdown
         spinnerAlertMunicipality.setAdapter(new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_dropdown_item_1line, CamNorteLocations.MUNICIPALITIES));
+                android.R.layout.simple_dropdown_item_1line, com.example.alertuppp.data.CamNorteLocations.MUNICIPALITIES));
 
         // Cascade: municipality → barangay
         spinnerAlertMunicipality.setOnItemClickListener((parent, v, pos, id) -> {
-            String muni = CamNorteLocations.MUNICIPALITIES[pos];
-            List<String> brgy = CamNorteLocations.getBarangays(muni);
+            String muni = com.example.alertuppp.data.CamNorteLocations.MUNICIPALITIES[pos];
+            java.util.List<String> brgy = com.example.alertuppp.data.CamNorteLocations.getBarangays(muni);
             // Add "All barangays" as first option
             String[] options = new String[brgy.size() + 1];
             options[0] = "All barangays";
@@ -138,8 +143,20 @@ public class OfficialAlertsFragment extends Fragment {
     private void loadAlerts() {
         repo.loadAll(new AlertRepository.Callback<List<Alert>>() {
             @Override public void onSuccess(List<Alert> alerts) {
-                if (!isAdded() || adapter == null) return;
-                requireActivity().runOnUiThread(() -> adapter.setData(alerts));
+                if (!isAdded()) return;
+                
+                java.util.List<Alert> activeList = new java.util.ArrayList<>();
+                java.util.List<Alert> historyList = new java.util.ArrayList<>();
+                
+                for (Alert a : alerts) {
+                    if (a.isActive()) activeList.add(a);
+                    else historyList.add(a);
+                }
+
+                requireActivity().runOnUiThread(() -> {
+                    activeAdapter.setData(activeList);
+                    historyAdapter.setData(historyList);
+                });
             }
             @Override public void onError(String message) { /* silent */ }
         });

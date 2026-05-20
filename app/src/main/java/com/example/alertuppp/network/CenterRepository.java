@@ -86,10 +86,14 @@ public class CenterRepository {
     }
 
     /** Delete a center by id (official only). */
-    public void deleteCenter(String centerId, Callback<Void> cb) {
+    public void deleteCenter(EvacuationCenter center, Callback<Void> cb) {
+        if (center.getCurrentOccupancy() > 0) {
+            cb.onError("Cannot delete a center that currently has occupants. Please move families first.");
+            return;
+        }
         executor.execute(() -> {
             try {
-                client.delete("evacuation_centers", "id=eq." + centerId);
+                client.delete("evacuation_centers", "id=eq." + center.getId());
                 cb.onSuccess(null);
             } catch (IOException e) {
                 cb.onError(e.getMessage());
@@ -111,20 +115,114 @@ public class CenterRepository {
         });
     }
 
-    /** Check a family into a center (increments occupancy). */
-    public void checkIn(String centerId, String residentId, int memberCount, Callback<Void> cb) {
+    public void adjustOccupancy(String centerId, int delta, Callback<Void> cb) {
+        if (centerId == null || centerId.isEmpty() || "null".equals(centerId)) {
+            if (cb != null) cb.onSuccess(null);
+            return;
+        }
         executor.execute(() -> {
             try {
-                // Record in evacuation_history
+                String json = client.get("evacuation_centers", "id=eq." + centerId + "&select=current_occupancy,max_capacity");
+                JSONArray arr = new JSONArray(json);
+                if (arr.length() > 0) {
+                    JSONObject o = arr.getJSONObject(0);
+                    int current = o.optInt("current_occupancy", 0);
+                    int max = o.optInt("max_capacity", 0);
+                    int next = Math.max(0, current + delta);
+                    
+                    JSONObject body = new JSONObject();
+                    body.put("current_occupancy", next);
+                    body.put("status", next >= max ? "full" : "available");
+                    client.patch("evacuation_centers", "id=eq." + centerId, body.toString());
+                }
+                if (cb != null) cb.onSuccess(null);
+            } catch (IOException | JSONException e) {
+                if (cb != null) cb.onError(e.getMessage());
+            }
+        });
+    }
+
+    /** Check a family into a center (increments occupancy). */
+    /** 
+     * Complex check-in: 
+     * 1. Detects if user is already in this center.
+     * 2. Handles transfers (decrements old center, increments new).
+     * 3. Updates all family registrations for the resident.
+     */
+    public void checkInHousehold(String newCenterId, String residentId, int memberCount, Callback<String> cb) {
+        executor.execute(() -> {
+            try {
+                // 1. Find if already checked in elsewhere
+                String regJson = client.get("family_registrations", "resident_id=eq." + residentId + "&select=id,center_id");
+                JSONArray regs = new JSONArray(regJson);
+                
+                String oldCenterId = null;
+                for (int i = 0; i < regs.length(); i++) {
+                    String cid = regs.getJSONObject(i).optString("center_id", "");
+                    if (!cid.isEmpty() && !"null".equals(cid)) {
+                        oldCenterId = cid;
+                        break;
+                    }
+                }
+
+                if (newCenterId.equals(oldCenterId)) {
+                    cb.onSuccess("ALREADY_HERE");
+                    return;
+                }
+
+                // 2. Handle Decrement of Old Center (Transfer)
+                if (oldCenterId != null && !oldCenterId.isEmpty()) {
+                    String oldJson = client.get("evacuation_centers", "id=eq." + oldCenterId + "&select=current_occupancy");
+                    JSONArray oldArr = new JSONArray(oldJson);
+                    if (oldArr.length() > 0) {
+                        int oldOcc = oldArr.getJSONObject(0).optInt("current_occupancy", 0);
+                        JSONObject decBody = new JSONObject();
+                        decBody.put("current_occupancy", Math.max(0, oldOcc - memberCount));
+                        decBody.put("status", "available");
+                        client.patch("evacuation_centers", "id=eq." + oldCenterId, decBody.toString());
+                    }
+                }
+
+                // 3. Increment New Center
+                String newJson = client.get("evacuation_centers", "id=eq." + newCenterId + "&select=current_occupancy,max_capacity");
+                JSONArray newArr = new JSONArray(newJson);
+                if (newArr.length() > 0) {
+                    JSONObject centerObj = newArr.getJSONObject(0);
+                    int current = centerObj.optInt("current_occupancy", 0);
+                    int max = centerObj.optInt("max_capacity", 0);
+                    int next = current + memberCount;
+                    
+                    JSONObject incBody = new JSONObject();
+                    incBody.put("current_occupancy", next);
+                    if (next >= max) incBody.put("status", "full");
+                    client.patch("evacuation_centers", "id=eq." + newCenterId, incBody.toString());
+                }
+
+                // 4. Update all family registrations
+                JSONObject regBody = new JSONObject();
+                regBody.put("center_id", newCenterId);
+                client.patch("family_registrations", "resident_id=eq." + residentId, regBody.toString());
+
+                // 5. Record History
                 JSONObject history = new JSONObject();
-                history.put("center_id", centerId);
+                history.put("center_id", newCenterId);
+                history.put("resident_id", residentId);
                 history.put("member_count", memberCount);
-                // household_id would come from the loaded profile; simplified here
                 client.post("evacuation_history", history.toString());
-                cb.onSuccess(null);
+
+                cb.onSuccess(oldCenterId == null ? "CHECKED_IN" : "TRANSFERRED");
+
             } catch (IOException | JSONException e) {
                 cb.onError(e.getMessage());
             }
+        });
+    }
+
+    /** Simple check-in (legacy support). */
+    public void checkIn(String centerId, String residentId, int memberCount, Callback<Void> cb) {
+        checkInHousehold(centerId, residentId, memberCount, new Callback<String>() {
+            @Override public void onSuccess(String result) { cb.onSuccess(null); }
+            @Override public void onError(String message) { cb.onError(message); }
         });
     }
 

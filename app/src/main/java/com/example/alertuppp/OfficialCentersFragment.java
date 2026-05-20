@@ -132,13 +132,12 @@ public class OfficialCentersFragment extends Fragment {
 
         // Map pane
         mapView         = view.findViewById(R.id.mapView);
-        tvMapCenterName = view.findViewById(R.id.tvMapCenterName);
-        tvMapCenterInfo = view.findViewById(R.id.tvMapCenterInfo);
 
         // Tabs
         tabList = view.findViewById(R.id.tabList);
         tabMap  = view.findViewById(R.id.tabMap);
 
+        setupSearchAndFilters(view);
         setupAdapter();
         setupMap();
         loadCenters();
@@ -148,12 +147,85 @@ public class OfficialCentersFragment extends Fragment {
         tabList.setOnClickListener(v -> showPane(true));
         tabMap.setOnClickListener(v -> showPane(false));
 
-        view.findViewById(R.id.btnGetRoute).setOnClickListener(v -> getRoute());
-        view.findViewById(R.id.btnEditFromMap).setOnClickListener(v -> {
-            if (selectedCenter != null) showEditDialog(selectedCenter);
+        return view;
+    }
+
+    // ── Search & Filters ──────────────────────────────────────────────────────
+
+    private String currentSearchQuery = "";
+    private String currentStatusFilter = "All"; // All, Available, Full, Closed
+
+    private void setupSearchAndFilters(View view) {
+        android.widget.EditText etSearch = view.findViewById(R.id.etSearchCenters);
+        etSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                currentSearchQuery = s.toString().toLowerCase().trim();
+                applyFilters();
+            }
+            @Override public void afterTextChanged(android.text.Editable s) {}
         });
 
-        return view;
+        View fAll = view.findViewById(R.id.filterAll);
+        View fOpen = view.findViewById(R.id.filterOpen);
+        View fFull = view.findViewById(R.id.filterFull);
+        View fClosed = view.findViewById(R.id.filterClosed);
+
+        View.OnClickListener filterClick = v -> {
+            // Reset all
+            fAll.setBackgroundResource(R.drawable.bg_chip_unselected);
+            ((TextView)fAll).setTextColor(0xFF757575);
+            fOpen.setBackgroundResource(R.drawable.bg_chip_unselected);
+            ((TextView)fOpen).setTextColor(0xFF757575);
+            fFull.setBackgroundResource(R.drawable.bg_chip_unselected);
+            ((TextView)fFull).setTextColor(0xFF757575);
+            fClosed.setBackgroundResource(R.drawable.bg_chip_unselected);
+            ((TextView)fClosed).setTextColor(0xFF757575);
+
+            // Select clicked
+            v.setBackgroundResource(R.drawable.bg_chip_selected);
+            ((TextView)v).setTextColor(Color.WHITE);
+
+            if (v.getId() == R.id.filterAll) currentStatusFilter = "All";
+            else if (v.getId() == R.id.filterOpen) currentStatusFilter = "Available";
+            else if (v.getId() == R.id.filterFull) currentStatusFilter = "Full";
+            else if (v.getId() == R.id.filterClosed) currentStatusFilter = "Closed";
+
+            applyFilters();
+        };
+
+        fAll.setOnClickListener(filterClick);
+        fOpen.setOnClickListener(filterClick);
+        fFull.setOnClickListener(filterClick);
+        fClosed.setOnClickListener(filterClick);
+    }
+
+    private void applyFilters() {
+        List<EvacuationCenter> filtered = new ArrayList<>();
+        for (EvacuationCenter c : allCenters) {
+            boolean matchesSearch = TextUtils.isEmpty(currentSearchQuery) ||
+                    c.getName().toLowerCase().contains(currentSearchQuery) ||
+                    c.getMunicipality().toLowerCase().contains(currentSearchQuery) ||
+                    c.getAddress().toLowerCase().contains(currentSearchQuery);
+
+            boolean matchesStatus = "All".equals(currentStatusFilter);
+            if (!matchesStatus) {
+                if ("Available".equals(currentStatusFilter)) {
+                    matchesStatus = !"closed".equalsIgnoreCase(c.getStatus()) && !c.isFull();
+                } else if ("Full".equals(currentStatusFilter)) {
+                    matchesStatus = c.isFull();
+                } else if ("Closed".equals(currentStatusFilter)) {
+                    matchesStatus = "closed".equalsIgnoreCase(c.getStatus());
+                }
+            }
+
+            if (matchesSearch && matchesStatus) {
+                filtered.add(c);
+            }
+        }
+        adapter.setData(filtered);
+        tvEmpty.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
+        tvEmpty.setText(filtered.isEmpty() ? "No centers match your search/filter." : "");
     }
 
     // ── Tabs ──────────────────────────────────────────────────────────────────
@@ -164,16 +236,14 @@ public class OfficialCentersFragment extends Fragment {
         paneList.setVisibility(listVisible ? View.VISIBLE : View.GONE);
         paneMap.setVisibility(listVisible ? View.GONE : View.VISIBLE);
 
-        tabList.setBackgroundResource(listVisible
-                ? R.drawable.bg_chip_selected : R.drawable.bg_chip_unselected);
-        tabList.setTextColor(listVisible ? 0xFFFFFFFF : 0xFF757575);
-        tabMap.setBackgroundResource(listVisible
-                ? R.drawable.bg_chip_unselected : R.drawable.bg_chip_selected);
-        tabMap.setTextColor(listVisible ? 0xFF757575 : 0xFFFFFFFF);
+        tabList.setBackgroundColor(listVisible ? Color.WHITE : Color.TRANSPARENT);
+        tabList.setTextColor(listVisible ? getResources().getColor(R.color.primary) : 0xFF757575);
+        
+        tabMap.setBackgroundColor(listVisible ? Color.TRANSPARENT : Color.WHITE);
+        tabMap.setTextColor(listVisible ? 0xFF757575 : getResources().getColor(R.color.primary));
 
         if (!listVisible && mapView != null) {
             mapView.onResume();
-            // OSMDroid needs a layout pass after becoming visible to render tiles
             mapView.post(() -> {
                 mapView.invalidate();
                 if (!mapInitialized) {
@@ -185,8 +255,6 @@ public class OfficialCentersFragment extends Fragment {
             });
         }
     }
-
-    // ── Adapter ───────────────────────────────────────────────────────────────
 
     private void setupAdapter() {
         adapter = new OfficialCenterAdapter(new OfficialCenterAdapter.Listener() {
@@ -206,8 +274,7 @@ public class OfficialCentersFragment extends Fragment {
                 if (!isAdded()) return;
                 requireActivity().runOnUiThread(() -> {
                     allCenters = centers;
-                    adapter.setData(centers);
-                    tvEmpty.setVisibility(centers.isEmpty() ? View.VISIBLE : View.GONE);
+                    applyFilters(); // Use filtered data
                     tvCentersCount.setText(centers.size() + " centers");
                     plotMarkers(centers);
                 });
@@ -347,18 +414,42 @@ public class OfficialCentersFragment extends Fragment {
 
     private void selectCenter(EvacuationCenter c) {
         selectedCenter = c;
-        tvMapCenterName.setText(c.getName());
+        
+        View dv = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_center_details_premium, null);
 
-        GeoPoint myLoc = getMyLocation();
-        String distStr = "";
-        if (myLoc != null && c.getLatitude() != 0) {
-            float[] r = new float[1];
-            Location.distanceBetween(myLoc.getLatitude(), myLoc.getLongitude(),
-                    c.getLatitude(), c.getLongitude(), r);
-            distStr = " · " + RoutingRepository.formatDistance(r[0]) + " away";
+        TextView tvName = dv.findViewById(R.id.tvDialogCenterName);
+        TextView tvStatus = dv.findViewById(R.id.tvDialogCenterStatus);
+        TextView tvMuni = dv.findViewById(R.id.tvDialogMunicipality);
+        TextView tvAddr = dv.findViewById(R.id.tvDialogAddress);
+        TextView tvCap = dv.findViewById(R.id.tvDialogCapacityInfo);
+        MaterialButton btnEdit = dv.findViewById(R.id.btnDialogEdit);
+
+        tvName.setText(c.getName());
+        tvMuni.setText(c.getMunicipality());
+        tvAddr.setText(c.getAddress());
+        tvCap.setText(String.format(Locale.US, "%d / %d occupants", c.getCurrentOccupancy(), c.getMaxCapacity()));
+
+        if (c.isFull()) {
+            tvStatus.setText("🔴 FULL");
+            tvStatus.setTextColor(0xFFD32F2F);
+            tvStatus.setBackgroundResource(R.drawable.bg_status_missing);
+        } else {
+            tvStatus.setText("🟢 AVAILABLE");
+            tvStatus.setTextColor(0xFF388E3C);
+            tvStatus.setBackgroundResource(R.drawable.bg_status_safe);
         }
-        tvMapCenterInfo.setText("📍 " + c.getMunicipality() + distStr
-                + "\n👥 " + c.getCapacityLabel() + " · " + (c.isFull() ? "FULL" : "Available"));
+
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dv)
+                .create();
+
+        btnEdit.setOnClickListener(v -> {
+            dialog.dismiss();
+            showEditDialog(c);
+        });
+
+        dialog.show();
     }
 
     // ── Routing ───────────────────────────────────────────────────────────────
@@ -378,7 +469,7 @@ public class OfficialCentersFragment extends Fragment {
             return;
         }
 
-        tvMapCenterInfo.setText("🔄 Calculating fastest route…");
+        Toast.makeText(requireContext(), "Calculating fastest route…", Toast.LENGTH_SHORT).show();
 
         routingRepo.getRoute(
                 myLoc.getLatitude(), myLoc.getLongitude(),
@@ -400,7 +491,6 @@ public class OfficialCentersFragment extends Fragment {
                     public void onError(String message) {
                         if (!isAdded()) return;
                         requireActivity().runOnUiThread(() -> {
-                            tvMapCenterInfo.setText("📍 " + selectedCenter.getMunicipality());
                             Toast.makeText(requireContext(),
                                     "Routing failed: " + message, Toast.LENGTH_SHORT).show();
                         });
@@ -563,7 +653,7 @@ public class OfficialCentersFragment extends Fragment {
                 .setTitle("Delete Center")
                 .setMessage("Delete \"" + c.getName() + "\"? This cannot be undone.")
                 .setPositiveButton("Delete", (d, w) ->
-                        repo.deleteCenter(c.getId(), new CenterRepository.Callback<Void>() {
+                        repo.deleteCenter(c, new CenterRepository.Callback<Void>() {
                             @Override public void onSuccess(Void r) {
                                 if (!isAdded()) return;
                                 requireActivity().runOnUiThread(() -> {

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -15,10 +16,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import androidx.core.content.FileProvider;
 
 import com.example.alertuppp.model.IncidentReport;
 import com.example.alertuppp.network.ReportRepository;
@@ -35,11 +44,43 @@ public class ReportFragment extends Fragment {
     private TextView tvCurrentLocation;
     private ProgressBar progressBar;
     private MaterialButton btnSubmit;
+    private android.widget.ImageView ivPhotoPreview;
+    private com.google.android.material.button.MaterialButton btnRemovePhoto;
     private ReportRepository repo;
     private SessionManager session;
 
     // Type button views
     private View lastSelectedType;
+
+    private Uri selectedPhotoUri = null;
+    private Uri currentPhotoUri = null;
+    private ActivityResultLauncher<Uri> takePicture;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        takePicture = registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
+            if (success) {
+                selectedPhotoUri = currentPhotoUri;
+                if (ivPhotoPreview != null) {
+                    ivPhotoPreview.setImageURI(selectedPhotoUri);
+                    ivPhotoPreview.setVisibility(View.VISIBLE);
+                }
+                if (btnRemovePhoto != null) btnRemovePhoto.setVisibility(View.VISIBLE);
+                Toast.makeText(requireContext(), "Photo captured", Toast.LENGTH_SHORT).show();
+            } else {
+                currentPhotoUri = null;
+            }
+        });
+    }
+
+    private Uri createImageFileUri() {
+        File imagePath = new File(requireContext().getCacheDir(), "camera_images");
+        if (!imagePath.exists()) imagePath.mkdirs();
+        File newFile = new File(imagePath, "report_" + System.currentTimeMillis() + ".jpg");
+        return FileProvider.getUriForFile(requireContext(), 
+                requireContext().getPackageName() + ".fileprovider", newFile);
+    }
 
     @Nullable
     @Override
@@ -53,16 +94,26 @@ public class ReportFragment extends Fragment {
 
         tvCurrentLocation = view.findViewById(R.id.tvCurrentLocation);
         btnSubmit         = view.findViewById(R.id.btnSubmitReport);
+        ivPhotoPreview    = view.findViewById(R.id.ivPhotoPreview);
+        btnRemovePhoto    = view.findViewById(R.id.btnRemovePhoto);
+
+        if (btnRemovePhoto != null) {
+            btnRemovePhoto.setOnClickListener(v -> {
+                selectedPhotoUri = null;
+                ivPhotoPreview.setVisibility(View.GONE);
+                btnRemovePhoto.setVisibility(View.GONE);
+            });
+        }
 
         setupTypeSelection(view);
         setupFloodLevelDropdown(view);
         fetchLocation(view);
 
         view.findViewById(R.id.btnRefreshLocation).setOnClickListener(v -> fetchLocation(view));
-        view.findViewById(R.id.btnAttachPhoto).setOnClickListener(v ->
-                Toast.makeText(requireContext(),
-                        "Camera/gallery integration — add ActivityResultLauncher here",
-                        Toast.LENGTH_SHORT).show());
+        view.findViewById(R.id.btnAttachPhoto).setOnClickListener(v -> {
+            currentPhotoUri = createImageFileUri();
+            takePicture.launch(currentPhotoUri);
+        });
 
         btnSubmit.setOnClickListener(v -> submitReport(view));
 
@@ -180,27 +231,87 @@ public class ReportFragment extends Fragment {
         if ("flood".equals(selectedType) && !flood.isEmpty()) report.setFloodLevel(flood);
 
         setLoading(true);
-        repo.submit(report, session.getUserId(), new ReportRepository.Callback<IncidentReport>() {
-            @Override
-            public void onSuccess(IncidentReport result) {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> {
-                    setLoading(false);
-                    Toast.makeText(requireContext(),
-                            "Report submitted successfully!", Toast.LENGTH_LONG).show();
-                    clearForm(view);
-                });
-            }
 
-            @Override
-            public void onError(String message) {
-                if (!isAdded()) return;
-                requireActivity().runOnUiThread(() -> {
-                    setLoading(false);
-                    Toast.makeText(requireContext(),
-                            "Submit failed: " + message, Toast.LENGTH_LONG).show();
+        if (selectedPhotoUri != null) {
+            try {
+                InputStream is = requireContext().getContentResolver().openInputStream(selectedPhotoUri);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                byte[] buf = new byte[8192];
+                int len;
+                while ((len = is.read(buf)) != -1) baos.write(buf, 0, len);
+                byte[] photoBytes = baos.toByteArray();
+                is.close();
+
+                String mimeType = requireContext().getContentResolver().getType(selectedPhotoUri);
+                if (mimeType == null) mimeType = "image/jpeg";
+
+                repo.submitWithPhoto(report, session.getUserId(), photoBytes, mimeType, new ReportRepository.Callback<IncidentReport>() {
+                    @Override
+                    public void onSuccess(IncidentReport result) {
+                        handleSuccess(view, result);
+                    }
+                    @Override
+                    public void onError(String message) {
+                        handleError(message);
+                    }
                 });
+            } catch (IOException e) {
+                setLoading(false);
+                Toast.makeText(requireContext(), "Failed to read photo", Toast.LENGTH_SHORT).show();
             }
+        } else {
+            repo.submit(report, session.getUserId(), new ReportRepository.Callback<IncidentReport>() {
+                @Override
+                public void onSuccess(IncidentReport result) {
+                    handleSuccess(view, result);
+                }
+                @Override
+                public void onError(String message) {
+                    handleError(message);
+                }
+            });
+        }
+    }
+
+    private void handleSuccess(View view, IncidentReport result) {
+        if (!isAdded()) return;
+        requireActivity().runOnUiThread(() -> {
+            setLoading(false);
+            Toast.makeText(requireContext(), "Report submitted successfully!", Toast.LENGTH_SHORT).show();
+            clearForm(view);
+
+            if (result != null && result.getId() != null) {
+                // Wait 4 seconds for AI to process, then check for duplicates
+                new android.os.Handler().postDelayed(() -> {
+                    fetchReportStatus(result.getId());
+                }, 4000);
+            }
+        });
+    }
+
+    private void fetchReportStatus(String reportId) {
+        if (!isAdded()) return;
+        repo.getReportById(reportId, new ReportRepository.Callback<IncidentReport>() {
+            @Override
+            public void onSuccess(IncidentReport updatedReport) {
+                if (!isAdded()) return;
+                if (updatedReport.isDuplicate()) {
+                    requireActivity().runOnUiThread(() -> {
+                        Toast.makeText(requireContext(),
+                                "AI verified: Your report matches an existing incident. Thank you for the update!",
+                                Toast.LENGTH_LONG).show();
+                    });
+                }
+            }
+            @Override public void onError(String message) {}
+        });
+    }
+
+    private void handleError(String message) {
+        if (!isAdded()) return;
+        requireActivity().runOnUiThread(() -> {
+            setLoading(false);
+            Toast.makeText(requireContext(), "Submit failed: " + message, Toast.LENGTH_LONG).show();
         });
     }
 
@@ -212,6 +323,7 @@ public class ReportFragment extends Fragment {
         etDesc.setText("");
         etLandmark.setText("");
         selectedType = "flood";
+        selectedPhotoUri = null;
     }
 
     private void setLoading(boolean loading) {

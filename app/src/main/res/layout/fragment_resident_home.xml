@@ -63,21 +63,6 @@
                     android:orientation="horizontal">
 
                     <TextView
-                        android:id="@+id/tvOfflineIndicator"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/bg_chip_unselected"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="8dp"
-                        android:paddingTop="4dp"
-                        android:paddingBottom="4dp"
-                        android:text="📶 Online"
-                        android:textColor="@color/white"
-                        android:textSize="11sp"
-                        android:visibility="visible" />
-
-                    <TextView
                         android:id="@+id/tvNotifBell"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -97,26 +82,28 @@
                 android:orientation="horizontal"
                 android:padding="12dp"
                 android:clickable="true"
-                android:focusable="true">
+                android:focusable="true"
+                android:visibility="gone">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="⚠️"
-                    android:textSize="18sp" />
+                <com.airbnb.lottie.LottieAnimationView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    app:lottie_rawRes="@raw/anim_alerts"
+                    app:lottie_autoPlay="true"
+                    app:lottie_loop="true" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="8dp"
                     android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/tvAlertTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Typhoon Warning Signal #2"
+                        android:text="Alert Title"
                         android:textColor="@color/danger"
                         android:textSize="13sp"
                         android:textStyle="bold" />
@@ -125,7 +112,7 @@
                         android:id="@+id/tvAlertSubtitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Camarines Norte — Prepare for evacuation"
+                        android:text="Alert details here..."
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -138,6 +125,51 @@
                     android:textSize="20sp" />
             </LinearLayout>
         </LinearLayout>
+        
+        <!-- Weather & News Section -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardWeather"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:background="@drawable/bg_card_rounded"
+                android:gravity="center_vertical">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvWeatherTemp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="28°C"
+                        android:textColor="@color/text_primary"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvWeatherDesc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Partly Cloudy · Daet"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
         <!-- Quick Actions -->
         <TextView
@@ -159,61 +191,64 @@
             <LinearLayout
                 android:id="@+id/btnFindCenters"
                 android:layout_width="0dp"
-                android:layout_height="90dp"
+                android:layout_height="100dp"
                 android:layout_weight="1"
                 android:layout_margin="4dp"
-                android:background="@drawable/bg_primary_gradient"
+                android:background="@drawable/bg_card_rounded"
                 android:gravity="center"
                 android:orientation="vertical"
+                android:elevation="2dp"
                 android:clickable="true"
                 android:focusable="true">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🗺️" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Find Centers" android:textColor="@color/white" android:textSize="11sp" android:layout_marginTop="4dp" android:gravity="center" />
+                <com.airbnb.lottie.LottieAnimationView
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    app:lottie_rawRes="@raw/anim_centers"
+                    app:lottie_autoPlay="true"
+                    app:lottie_loop="true" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Centers" android:textColor="@color/text_primary" android:textSize="11sp" android:layout_marginTop="4dp" android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/btnCheckIn"
                 android:layout_width="0dp"
-                android:layout_height="90dp"
+                android:layout_height="100dp"
                 android:layout_weight="1"
                 android:layout_margin="4dp"
                 android:background="@drawable/bg_card_rounded"
                 android:gravity="center"
                 android:orientation="vertical"
+                android:elevation="2dp"
                 android:clickable="true"
                 android:focusable="true">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="✅" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Check In" android:textColor="@color/text_primary" android:textSize="11sp" android:layout_marginTop="4dp" android:gravity="center" />
+                <com.airbnb.lottie.LottieAnimationView
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    app:lottie_rawRes="@raw/anim_alerts"
+                    app:lottie_autoPlay="true"
+                    app:lottie_loop="true" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Evacuate" android:textColor="@color/text_primary" android:textSize="11sp" android:layout_marginTop="4dp" android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/btnReportIncident"
                 android:layout_width="0dp"
-                android:layout_height="90dp"
+                android:layout_height="100dp"
                 android:layout_weight="1"
                 android:layout_margin="4dp"
                 android:background="@drawable/bg_card_rounded"
                 android:gravity="center"
                 android:orientation="vertical"
+                android:elevation="2dp"
                 android:clickable="true"
                 android:focusable="true">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📋" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Report" android:textColor="@color/text_primary" android:textSize="11sp" android:layout_marginTop="4dp" android:gravity="center" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/btnSuggestCenter"
-                android:layout_width="0dp"
-                android:layout_height="90dp"
-                android:layout_weight="1"
-                android:layout_margin="4dp"
-                android:background="@drawable/bg_card_rounded"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:clickable="true"
-                android:focusable="true">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="📍" android:textSize="26sp" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Suggest" android:textColor="@color/text_primary" android:textSize="11sp" android:layout_marginTop="4dp" android:gravity="center" />
+                <com.airbnb.lottie.LottieAnimationView
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    app:lottie_rawRes="@raw/anim_reports"
+                    app:lottie_autoPlay="true"
+                    app:lottie_loop="true" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Report" android:textColor="@color/text_primary" android:textSize="11sp" android:layout_marginTop="4dp" android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
 
@@ -265,15 +300,17 @@
                     android:orientation="horizontal">
 
                     <TextView
+                        android:id="@+id/tvHouseholdName"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Dela Cruz Family"
+                        android:text="My Household"
                         android:textColor="@color/text_primary"
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/tvHouseholdStatus"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_status_safe"
@@ -281,35 +318,18 @@
                         android:paddingEnd="10dp"
                         android:paddingTop="4dp"
                         android:paddingBottom="4dp"
-                        android:text="All Safe"
+                        android:text="Safe"
                         android:textColor="@color/success"
                         android:textSize="12sp"
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <!-- Member status rows -->
                 <LinearLayout
+                    android:id="@+id/containerMembers"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="👤" android:textSize="16sp" />
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="8dp" android:text="Juan dela Cruz" android:textColor="@color/text_primary" android:textSize="13sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="✅ Safe" android:textColor="@color/success" android:textSize="12sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="👤" android:textSize="16sp" />
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="8dp" android:text="Maria dela Cruz" android:textColor="@color/text_primary" android:textSize="13sp" />
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="🏠 Evacuated" android:textColor="#1976D2" android:textSize="12sp" />
+                    android:orientation="vertical">
+                    <!-- Members will be added here dynamically -->
                 </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
@@ -349,21 +369,28 @@
                 android:textSize="13sp" />
         </LinearLayout>
 
-        <include layout="@layout/item_center_card"
+        <LinearLayout
+            android:id="@+id/linearLayoutCenters"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="10dp" />
+            android:orientation="vertical">
 
-        <include layout="@layout/item_center_card"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="8dp" />
+            <include layout="@layout/item_center_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="10dp" />
 
-        <!-- Latest Announcements -->
+            <include layout="@layout/item_center_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+
+        <!-- Global Weather News -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -377,23 +404,17 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Latest Announcements"
+                android:text="National Weather Updates"
                 style="@style/SectionTitle" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="See all ›"
-                android:textColor="@color/primary"
-                android:textSize="13sp" />
         </LinearLayout>
 
-        <include layout="@layout/item_announcement_card"
+        <LinearLayout
+            android:id="@+id/linearLayoutGlobalNews"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="10dp" />
+            android:orientation="vertical">
+            <!-- Global news items will be added here -->
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

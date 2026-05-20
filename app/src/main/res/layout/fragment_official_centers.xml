@@ -50,50 +50,159 @@
             app:fabSize="mini" />
     </LinearLayout>
 
-    <!-- Tab switcher: List | Map -->
+    <!-- Search and Filters -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@color/white"
-        android:orientation="horizontal"
-        android:elevation="2dp">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="8dp"
+        android:background="@color/white">
 
-        <TextView
-            android:id="@+id/tabList"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="📋  List"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="@color/primary"
-            android:background="@drawable/bg_chip_selected" />
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#EEEEEE">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp">
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/ic_menu_search"
+                    app:tint="@color/text_secondary" />
+                <EditText
+                    android:id="@+id/etSearchCenters"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="8dp"
+                    android:background="@null"
+                    android:hint="Search by name or location..."
+                    android:textSize="14sp"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-        <TextView
-            android:id="@+id/tabMap"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="🗺️  Map"
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:background="@drawable/bg_chip_unselected" />
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:scrollbars="none">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/filterAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="All Centers"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="6dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_chip_selected"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/filterOpen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Available"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="6dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/filterFull"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Near Full"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="6dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+                <TextView
+                    android:id="@+id/filterClosed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Closed"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="6dp"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </HorizontalScrollView>
     </LinearLayout>
 
-    <!-- Content area: FrameLayout so both panes occupy the same space -->
+    <!-- Tab switcher -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="12dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#F5F5F5">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/tabList"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="LIST VIEW"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1"
+                    android:textColor="@color/primary"
+                    android:background="@color/white" />
+                <TextView
+                    android:id="@+id/tabMap"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="MAP OVERVIEW"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1"
+                    android:textColor="@color/text_secondary" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <!-- List pane -->
         <FrameLayout
             android:id="@+id/paneList"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvCenters"
                 android:layout_width="match_parent"
@@ -103,107 +212,26 @@
                 android:paddingTop="8dp"
                 android:paddingBottom="80dp"
                 android:clipToPadding="false" />
-
             <TextView
                 android:id="@+id/tvEmpty"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="No centers yet.\nTap + to add one."
-                android:gravity="center"
+                android:text="No centers found."
                 android:textColor="@color/text_secondary"
                 android:textSize="15sp"
                 android:visibility="gone" />
         </FrameLayout>
 
-        <!-- Map pane (hidden by default) -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/paneMap"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone">
-
             <org.osmdroid.views.MapView
                 android:id="@+id/mapView"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/bottomSheet"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-
-            <!-- Bottom sheet: selected center info + route -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/bottomSheet"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="8dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp"
-                    android:paddingBottom="24dp">
-
-                    <View
-                        android:layout_width="40dp"
-                        android:layout_height="4dp"
-                        android:layout_gravity="center_horizontal"
-                        android:background="@color/divider" />
-
-                    <TextView
-                        android:id="@+id/tvMapCenterName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:text="Tap a pin to select a center"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary" />
-
-                    <TextView
-                        android:id="@+id/tvMapCenterInfo"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text=""
-                        android:textSize="13sp"
-                        android:textColor="@color/text_secondary" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:orientation="horizontal">
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnGetRoute"
-                            style="@style/PrimaryButton"
-                            android:layout_width="0dp"
-                            android:layout_height="36dp"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="8dp"
-                            android:text="Get Route"
-                            android:textSize="12sp" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnEditFromMap"
-                            style="@style/OutlineButton"
-                            android:layout_width="0dp"
-                            android:layout_height="36dp"
-                            android:layout_weight="1"
-                            android:text="Edit"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
+                android:layout_height="match_parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
-
     </FrameLayout>
-
 </LinearLayout>

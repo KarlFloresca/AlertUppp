@@ -1,106 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/alertContainer"
+    android:id="@+id/alertCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="12dp"
-    android:background="@drawable/bg_alert_danger"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_marginBottom="16dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="#EEEEEE">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tvAlertEmoji"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="⚠️"
-            android:textSize="20sp" />
+        <!-- Status Sidebar Color -->
+        <View
+            android:id="@+id/viewAlertSeverity"
+            android:layout_width="6dp"
+            android:layout_height="match_parent"
+            android:background="@color/danger" />
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="10dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvAlertLevel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_status_missing"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="4dp"
+                    android:text="CRITICAL"
+                    android:textColor="@color/danger"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1" />
+
+                <View android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+
+                <TextView
+                    android:id="@+id/tvAlertTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2 mins ago"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tvAlertTitle"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Alert Title"
-                android:textColor="@color/danger"
-                android:textSize="14sp"
+                android:layout_marginTop="12dp"
+                android:text="Severe Weather Bulletin"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvAlertArea"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Area"
+                android:layout_marginTop="4dp"
+                android:text="Target: Daet, Camarines Norte"
                 android:textColor="@color/text_secondary"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                android:textStyle="italic" />
+
+            <TextView
+                android:id="@+id/tvAlertBody"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:lineSpacingExtra="4dp"
+                android:text="Forced evacuation is currently in effect for low-lying areas. Please proceed to the nearest designated center immediately."
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+
+            <!-- Actions -->
+            <LinearLayout
+                android:id="@+id/layoutAlertActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDeactivateAlert"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:text="Mark Resolved"
+                    android:textColor="@color/text_primary"
+                    app:cornerRadius="12dp" />
+            </LinearLayout>
+
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/tvAlertLevel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="DANGER"
-            android:textColor="@color/danger"
-            android:textSize="10sp"
-            android:textStyle="bold" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/tvAlertBody"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Alert body text"
-        android:textColor="@color/text_primary"
-        android:textSize="13sp" />
-
-    <TextView
-        android:id="@+id/tvAlertTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Issued: Today"
-        android:textColor="@color/text_secondary"
-        android:textSize="11sp" />
-
-    <!-- Official actions (hidden for residents) -->
-    <LinearLayout
-        android:id="@+id/layoutAlertActions"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal"
-        android:visibility="gone">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnDeactivateAlert"
-            style="@style/OutlineButton"
-            android:layout_width="0dp"
-            android:layout_height="34dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:text="Deactivate"
-            android:textSize="12sp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnEditAlertItem"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="34dp"
-            android:layout_weight="1"
-            android:text="Edit"
-            android:textSize="12sp" />
-    </LinearLayout>
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

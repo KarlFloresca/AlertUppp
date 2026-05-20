@@ -158,7 +158,7 @@ public class HouseholdFragment extends Fragment {
                 showMemberDialogWithRefresh(f, m, pos, null, null);
             }
             @Override public void onDeleteMember(Family f, FamilyMember m, int pos) {
-                confirmDeleteMember(f, m, pos);
+                confirmDeleteMember(f, m, pos, null);
             }
         });
         rvFamilies.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -372,6 +372,10 @@ public class HouseholdFragment extends Fragment {
     // ── Add Family dialog ─────────────────────────────────────────────────────
 
     private void showAddFamilyDialog() {
+        if (householdProfile == null) {
+            if (getContext() != null) Toast.makeText(getContext(), "Profile not loaded", Toast.LENGTH_SHORT).show();
+            return;
+        }
         View dv = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_add_family_member, null); // reuse simple layout
         // We only need a name field — repurpose etMemberName
@@ -400,8 +404,8 @@ public class HouseholdFragment extends Fragment {
                 familyRepo.addFamily(householdProfile.getId(), session.getUserId(), name,
                         new FamilyRepository.Callback<Family>() {
                             @Override public void onSuccess(Family f) {
-                                if (!isAdded()) return;
-                                requireActivity().runOnUiThread(() -> {
+                                if (getActivity() == null || !isAdded()) return;
+                                getActivity().runOnUiThread(() -> {
                                     dialog.dismiss();
                                     families.add(0, f);
                                     adapter.notifyItemInserted(0);
@@ -411,11 +415,11 @@ public class HouseholdFragment extends Fragment {
                                 });
                             }
                             @Override public void onError(String msg) {
-                                if (!isAdded()) return;
-                                requireActivity().runOnUiThread(() -> {
+                                if (getActivity() == null || !isAdded()) return;
+                                getActivity().runOnUiThread(() -> {
                                     dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
                                     dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText("Add");
-                                    Toast.makeText(requireContext(), "Failed: " + msg, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "Failed: " + msg, Toast.LENGTH_SHORT).show();
                                 });
                             }
                         });
@@ -431,22 +435,11 @@ public class HouseholdFragment extends Fragment {
                 .inflate(R.layout.dialog_edit_family, null);
 
         TextInputEditText etFamilyName = dv.findViewById(R.id.etFamilyName);
-        AutoCompleteTextView spinnerCenter = dv.findViewById(R.id.spinnerFamilyCenter);
         RecyclerView rvMembers = dv.findViewById(R.id.rvEditMembers);
         TextView tvNoMembers = dv.findViewById(R.id.tvEditNoMembers);
 
         etFamilyName.setText(family.getFamilyName());
 
-        // Center dropdown — "None" + loaded centers
-        List<String> centerOptions = new ArrayList<>();
-        centerOptions.add("None");
-        for (EvacuationCenter c : centers) centerOptions.add(c.getName());
-        spinnerCenter.setAdapter(new ArrayAdapter<>(requireContext(),
-                android.R.layout.simple_dropdown_item_1line, centerOptions));
-        if (family.getCenterName() != null && !family.getCenterName().isEmpty())
-            spinnerCenter.setText(family.getCenterName(), false);
-        else
-            spinnerCenter.setText("None", false);
 
         // Members list inside dialog — use array wrapper so lambdas can reference it
         rvMembers.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -459,7 +452,7 @@ public class HouseholdFragment extends Fragment {
                         showMemberDialogWithRefresh(family, m, pos, memberAdapterRef[0], refreshRef[0]);
                     }
                     @Override public void onDelete(FamilyMember m, int pos) {
-                        confirmDeleteMember(family, m, pos);
+                        confirmDeleteMember(family, m, pos, refreshRef[0]);
                     }
                 });
         rvMembers.setAdapter(memberAdapterRef[0]);
@@ -490,40 +483,26 @@ public class HouseholdFragment extends Fragment {
                     return;
                 }
 
-                // Resolve selected center id
-                String selectedCenterText = spinnerCenter.getText().toString().trim();
-                String newCenterId = null;
-                String newCenterName = null;
-                for (EvacuationCenter c : centers) {
-                    if (c.getName().equals(selectedCenterText)) {
-                        newCenterId = c.getId();
-                        newCenterName = c.getName();
-                        break;
-                    }
-                }
-
                 family.setFamilyName(newName);
-                family.setCenterId(newCenterId);
-                family.setCenterName(newCenterName);
 
                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
                 dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText("Saving…");
 
                 familyRepo.updateFamily(family, new FamilyRepository.Callback<Void>() {
                     @Override public void onSuccess(Void r) {
-                        if (!isAdded()) return;
-                        requireActivity().runOnUiThread(() -> {
+                        if (getActivity() == null || !isAdded()) return;
+                        getActivity().runOnUiThread(() -> {
                             dialog.dismiss();
                             adapter.notifyDataSetChanged();
                             refreshDashboard();
                         });
                     }
                     @Override public void onError(String msg) {
-                        if (!isAdded()) return;
-                        requireActivity().runOnUiThread(() -> {
+                        if (getActivity() == null || !isAdded()) return;
+                        getActivity().runOnUiThread(() -> {
                             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
                             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setText("Save");
-                            Toast.makeText(requireContext(), "Failed: " + msg, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Failed: " + msg, Toast.LENGTH_SHORT).show();
                         });
                     }
                 });
@@ -543,17 +522,26 @@ public class HouseholdFragment extends Fragment {
                 .setPositiveButton("Remove", (d, w) ->
                         familyRepo.deleteFamily(f.getId(), new FamilyRepository.Callback<Void>() {
                             @Override public void onSuccess(Void r) {
-                                if (!isAdded()) return;
-                                requireActivity().runOnUiThread(() -> {
+                                if (getActivity() == null || !isAdded()) return;
+                                getActivity().runOnUiThread(() -> {
                                     int idx = families.indexOf(f);
-                                    if (idx >= 0) { families.remove(idx); adapter.notifyItemRemoved(idx); }
+                                    if (idx >= 0) {
+                                        int count = f.getMemberCount();
+                                        families.remove(idx);
+                                        adapter.notifyItemRemoved(idx);
+                                        
+                                        // Update Center Occupancy if checked in
+                                        if (f.getCenterId() != null && !f.getCenterId().isEmpty()) {
+                                            centerRepo.adjustOccupancy(f.getCenterId(), -count, null);
+                                        }
+                                    }
                                     refreshDashboard();
                                 });
                             }
                             @Override public void onError(String msg) {
-                                if (!isAdded()) return;
-                                requireActivity().runOnUiThread(() ->
-                                        Toast.makeText(requireContext(), "Failed: " + msg, Toast.LENGTH_SHORT).show());
+                                if (getActivity() == null || !isAdded()) return;
+                                getActivity().runOnUiThread(() ->
+                                        Toast.makeText(getContext(), "Failed: " + msg, Toast.LENGTH_SHORT).show());
                             }
                         }))
                 .setNegativeButton("Cancel", null)
@@ -602,8 +590,8 @@ public class HouseholdFragment extends Fragment {
                     existing.setFullName(name); existing.setAge(age); existing.setNotes(notes);
                     familyRepo.updateMember(existing, new FamilyRepository.Callback<Void>() {
                         @Override public void onSuccess(Void r) {
-                            if (!isAdded()) return;
-                            requireActivity().runOnUiThread(() -> {
+                            if (getActivity() == null || !isAdded()) return;
+                            getActivity().runOnUiThread(() -> {
                                 memberDialog.dismiss();
                                 if (inlineAdapter != null) inlineAdapter.notifyDataSetChanged();
                                 if (onRefresh != null) onRefresh.run();
@@ -624,21 +612,36 @@ public class HouseholdFragment extends Fragment {
                     m.setNotes(notes);
                     familyRepo.addMember(family.getId(), m, new FamilyRepository.Callback<FamilyMember>() {
                         @Override public void onSuccess(FamilyMember saved) {
-                            if (!isAdded()) return;
-                            requireActivity().runOnUiThread(() -> {
+                            if (getActivity() == null || !isAdded()) return;
+                            getActivity().runOnUiThread(() -> {
                                 memberDialog.dismiss();
                                 family.addMember(saved);
                                 if (inlineAdapter != null) inlineAdapter.notifyDataSetChanged();
                                 if (onRefresh != null) onRefresh.run();
                                 adapter.notifyDataSetChanged();
                                 refreshDashboard();
+
+                                // Update Center Occupancy if checked in
+                                String cid = family.getCenterId();
+                                if (cid != null && !cid.isEmpty() && !"null".equals(cid)) {
+                                    centerRepo.adjustOccupancy(cid, 1, new CenterRepository.Callback<Void>() {
+                                        @Override public void onSuccess(Void result) {
+                                            if (isAdded() && getActivity() != null) {
+                                                getActivity().runOnUiThread(() -> 
+                                                    Toast.makeText(getContext(), "Center occupancy updated (+1)", Toast.LENGTH_SHORT).show()
+                                                );
+                                            }
+                                        }
+                                        @Override public void onError(String msg) {}
+                                    });
+                                }
                             });
                         }
                         @Override public void onError(String msg) {
-                            if (!isAdded()) return;
-                            requireActivity().runOnUiThread(() -> {
+                            if (!isAdded() || getActivity() == null) return;
+                            getActivity().runOnUiThread(() -> {
                                 memberDialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-                                Toast.makeText(requireContext(), "Failed: " + msg, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), "Failed: " + msg, Toast.LENGTH_SHORT).show();
                             });
                         }
                     });
@@ -650,7 +653,7 @@ public class HouseholdFragment extends Fragment {
 
     // ── Delete Member ─────────────────────────────────────────────────────────
 
-    private void confirmDeleteMember(Family family, FamilyMember member, int pos) {
+    private void confirmDeleteMember(Family family, FamilyMember member, int pos, @Nullable Runnable onDialogRefresh) {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Remove Member")
                 .setMessage("Remove " + member.getFullName() + "?")
@@ -660,8 +663,30 @@ public class HouseholdFragment extends Fragment {
                                 if (!isAdded()) return;
                                 requireActivity().runOnUiThread(() -> {
                                     family.removeMember(pos);
+                                    if (onDialogRefresh != null) onDialogRefresh.run();
                                     adapter.notifyDataSetChanged();
                                     refreshDashboard();
+
+                                    // Update Center Occupancy if checked in
+                                    String cid = family.getCenterId();
+                                    if (cid != null && !cid.isEmpty() && !"null".equals(cid)) {
+                                        centerRepo.adjustOccupancy(cid, -1, new CenterRepository.Callback<Void>() {
+                                            @Override public void onSuccess(Void result) {
+                                                if (isAdded() && getActivity() != null) {
+                                                    getActivity().runOnUiThread(() ->
+                                                        Toast.makeText(getContext(), "Center occupancy updated (-1)", Toast.LENGTH_SHORT).show()
+                                                    );
+                                                }
+                                            }
+                                            @Override public void onError(String msg) {
+                                                if (isAdded() && getActivity() != null) {
+                                                    getActivity().runOnUiThread(() ->
+                                                        Toast.makeText(getContext(), "Occupancy sync failed: " + msg, Toast.LENGTH_SHORT).show()
+                                                    );
+                                                }
+                                            }
+                                        });
+                                    }
                                 });
                             }
                             @Override public void onError(String msg) {

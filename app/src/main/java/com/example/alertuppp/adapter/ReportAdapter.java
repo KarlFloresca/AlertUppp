@@ -12,21 +12,26 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.alertuppp.R;
 import com.example.alertuppp.model.IncidentReport;
 import com.google.android.material.button.MaterialButton;
+import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ViewHolder> {
 
     public interface OnReportActionListener {
         void onVerify(IncidentReport report);
-        void onAssign(IncidentReport report);
+        void onRespond(IncidentReport report);
         void onResolve(IncidentReport report);
+        void onReportClick(IncidentReport report);
     }
 
     private List<IncidentReport> reports = new ArrayList<>();
     private final boolean showOfficialActions;
     private OnReportActionListener listener;
+    private final Set<Integer> expandedPositions = new HashSet<>();
 
     public ReportAdapter(boolean showOfficialActions) {
         this.showOfficialActions = showOfficialActions;
@@ -57,6 +62,35 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ViewHolder
         h.tvTitle.setText(r.getTitle());
         h.tvMeta.setText(r.getTypeLabel() + " · " + formatTime(r.getCreatedAt()));
         h.tvDescription.setText(r.getDescription() != null ? r.getDescription() : "");
+ 
+        // Extra info (Landmark/Flood)
+        StringBuilder extra = new StringBuilder();
+        if (r.getLandmark() != null && !r.getLandmark().isEmpty()) {
+            extra.append("📍 ").append(r.getLandmark());
+        }
+        if (r.getFloodLevel() != null && !r.getFloodLevel().isEmpty()) {
+            if (extra.length() > 0) extra.append(" · ");
+            extra.append("🌊 ").append(r.getFloodLevel());
+        }
+        
+        if (extra.length() > 0) {
+            h.tvExtraInfo.setText(extra.toString());
+            h.tvExtraInfo.setVisibility(View.VISIBLE);
+        } else {
+            h.tvExtraInfo.setVisibility(View.GONE);
+        }
+
+        // Photo loading (Only if expanded)
+        if (r.getPhotoUrl() != null && !r.getPhotoUrl().isEmpty() && expandedPositions.contains(position)) {
+            h.ivPhoto.setVisibility(View.VISIBLE);
+            Glide.with(h.itemView.getContext())
+                .load(r.getPhotoUrl())
+                .centerCrop()
+                .placeholder(R.drawable.bg_input_field)
+                .into(h.ivPhoto);
+        } else {
+            h.ivPhoto.setVisibility(View.GONE);
+        }
 
         // Status badge
         String status = r.getStatus() != null ? r.getStatus() : "pending";
@@ -83,10 +117,18 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ViewHolder
                 break;
         }
 
+        // Duplicate count badge
+        if (r.getDuplicateCount() > 0) {
+            h.tvDuplicateCount.setVisibility(View.VISIBLE);
+            h.tvDuplicateCount.setText("Reported by " + (r.getDuplicateCount() + 1) + " residents");
+        } else {
+            h.tvDuplicateCount.setVisibility(View.GONE);
+        }
+ 
         if (showOfficialActions && listener != null) {
             h.layoutActions.setVisibility(View.VISIBLE);
             h.btnVerify.setOnClickListener(v -> listener.onVerify(r));
-            h.btnAssign.setOnClickListener(v -> listener.onAssign(r));
+            h.btnAssign.setOnClickListener(v -> listener.onRespond(r));
             h.btnResolve.setOnClickListener(v -> listener.onResolve(r));
 
             // Hide verify if already past pending
@@ -97,6 +139,16 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ViewHolder
         } else {
             h.layoutActions.setVisibility(View.GONE);
         }
+
+        h.itemView.setOnClickListener(v -> {
+            if (expandedPositions.contains(position)) {
+                expandedPositions.remove(position);
+            } else {
+                expandedPositions.add(position);
+            }
+            notifyItemChanged(position);
+            if (listener != null) listener.onReportClick(r);
+        });
     }
 
     @Override
@@ -108,7 +160,8 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ViewHolder
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTypeIcon, tvTitle, tvMeta, tvDescription, tvStatus;
+        TextView tvTypeIcon, tvTitle, tvMeta, tvDescription, tvStatus, tvExtraInfo, tvDuplicateCount;
+        android.widget.ImageView ivPhoto;
         LinearLayout layoutActions;
         MaterialButton btnVerify, btnAssign, btnResolve;
 
@@ -119,6 +172,9 @@ public class ReportAdapter extends RecyclerView.Adapter<ReportAdapter.ViewHolder
             tvMeta        = v.findViewById(R.id.tvReportMeta);
             tvDescription = v.findViewById(R.id.tvReportDescription);
             tvStatus      = v.findViewById(R.id.tvReportStatus);
+            tvExtraInfo   = v.findViewById(R.id.tvReportExtraInfo);
+            tvDuplicateCount = v.findViewById(R.id.tvDuplicateCount);
+            ivPhoto       = v.findViewById(R.id.ivReportPhoto);
             layoutActions = v.findViewById(R.id.layoutOfficialActions);
             btnVerify     = v.findViewById(R.id.btnVerifyReport);
             btnAssign     = v.findViewById(R.id.btnAssignResponse);

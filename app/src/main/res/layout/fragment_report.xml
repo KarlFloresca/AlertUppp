@@ -35,14 +35,15 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp"
-            android:paddingBottom="100dp">
+            android:paddingBottom="200dp">
 
             <!-- Report Type -->
             <androidx.cardview.widget.CardView
@@ -396,14 +397,18 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Submit -->
+            <!-- Submit Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSubmitReport"
                 style="@style/PrimaryButton"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="24dp"
                 android:text="Submit Report"
-                android:textSize="15sp" />
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp" />
 
         </LinearLayout>
     </ScrollView>

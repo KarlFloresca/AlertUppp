@@ -60,6 +60,74 @@
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total" android:textColor="@color/text_secondary" android:textSize="11sp" />
         </LinearLayout>
     </LinearLayout>
+ 
+    <!-- Tab Selector -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_tab_selector"
+        android:orientation="horizontal"
+        android:padding="4dp">
+ 
+        <TextView
+            android:id="@+id/btnTabActive"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_tab_selected"
+            android:gravity="center"
+            android:text="Active Reports"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+ 
+        <TextView
+            android:id="@+id/btnTabResolved"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:gravity="center"
+            android:text="Resolved"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <!-- Map View Container (Hidden by default) -->
+    <FrameLayout
+        android:id="@+id/mapContainer"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:layout_margin="12dp"
+        android:visibility="gone">
+        
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp">
+            
+            <org.osmdroid.views.MapView
+                android:id="@+id/officialReportsMap"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </androidx.cardview.widget.CardView>
+
+        <ImageButton
+            android:id="@+id/btnCloseMap"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="end|top"
+            android:layout_margin="8dp"
+            android:background="@drawable/bg_circle_white"
+            android:elevation="6dp"
+            android:padding="8dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="@color/primary" />
+    </FrameLayout>
 
     <!-- Filter Chips -->
     <HorizontalScrollView
